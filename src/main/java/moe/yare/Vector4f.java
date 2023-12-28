@@ -14,4 +14,10 @@ public class Vector4f extends Vector3f {
     public float getW() {
         return w;
     }
+
+    public Vector4f setW(float w) {
+        this.w = w;
+
+        return this;
+    }
 }

@@ -4,6 +4,16 @@ import static moe.yare.Transform.*;
 
 public class Camera {
 
+    //TODO: make these static?
+    private final float S2 = 1.0f / (float) Math.sqrt(2);
+    private final Plane[] clippingPlanes = new Plane[] {
+            new Plane(new Vector3f(0, 0, 1), -1),
+            new Plane(new Vector3f(S2, 0, S2), 0),
+            new Plane(new Vector3f(-S2, 0, S2), 0),
+            new Plane(new Vector3f(0, -S2, S2), 0),
+            new Plane(new Vector3f(0, S2, S2), 0)
+    };
+
     private Vector3f translation;
     private Vector3f rotation;
     private Matrix4f cameraMatrix;
@@ -27,5 +37,9 @@ public class Camera {
 
     public Matrix4f getCameraMatrix() {
         return cameraMatrix;
+    }
+
+    public Plane[] getClippingPlanes() {
+        return clippingPlanes;
     }
 }
