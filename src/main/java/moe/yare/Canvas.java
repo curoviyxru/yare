@@ -6,6 +6,10 @@ import java.io.IOException;
 
 public class Canvas extends JPanel {
 
+    public Model generateSphere(int divs, Color color) {
+        return null;
+    }
+
     @Override
     public void paint(Graphics g) {
         /*
@@ -18,19 +22,19 @@ public class Canvas extends JPanel {
                 new Vector3f(-1, 1, -1),
                 new Vector3f(-1, -1, -1),
                 new Vector3f(1, -1, -1),
-        }, new Vector3i[] {
-                new Vector3i(0, 1, 2),
-                new Vector3i(0, 2, 3),
-                new Vector3i(4, 0, 3),
-                new Vector3i(4, 3, 7),
-                new Vector3i(5, 4, 7),
-                new Vector3i(5, 7, 6),
-                new Vector3i(1, 5, 6),
-                new Vector3i(1, 6, 2),
-                new Vector3i(4, 5, 1),
-                new Vector3i(4, 1, 0),
-                new Vector3i(2, 6, 7),
-                new Vector3i(2, 7, 3),
+        }, new Triangle[] {
+                new Triangle(new Vector3i(0, 1, 2), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(0, 2, 3), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(4, 0, 3), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(4, 3, 7), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(5, 4, 7), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(5, 7, 6), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(1, 5, 6), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(1, 6, 2), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(4, 5, 1), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(4, 1, 0), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(2, 6, 7), new Color(0, 0, 0), new Vector3f[0]),
+                new Triangle(new Vector3i(2, 7, 3), new Color(0, 0, 0), new Vector3f[0]),
         });
         */
 

@@ -39,4 +39,13 @@ public class Vector3i {
     public void setZ(int z) {
         this.z = z;
     }
+
+    public int getComponent(int i) {
+        return switch (i) {
+            case 0 -> x;
+            case 1 -> y;
+            case 2 -> z;
+            default -> 0;
+        };
+    }
 }
