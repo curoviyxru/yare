@@ -46,6 +46,17 @@ public class ObjParser {
                 if (line.startsWith("f ")) {
                     String[] values = line.split("\\s+");
                     int[] face = new int[3];
+                    if (values.length == 5) { //If there is 4 vertices in a face, we triangyliryem them
+                        int[] secondFace = new int[3];
+                        for (int i = 2; i <= 4; i++) {
+                            String[] vertexIndex = values[i].split("/");
+                            int vertexIndexInt = Integer.parseInt(vertexIndex[0]) - 1;
+                            int uvIndexInt = Integer.parseInt(vertexIndex[1]) - 1;
+                            int normalIndexInt = Integer.parseInt(vertexIndex[2]) - 1;
+                            secondFace[i-2] = vertexIndexInt;
+                        }
+                        faces.add(new Vector3i(secondFace[0], secondFace[1], secondFace[2]));
+                    }
                     for (int i = 1; i <= 3; i++) {
                         String[] vertexIndex = values[i].split("/");
                         int vertexIndexInt = Integer.parseInt(vertexIndex[0]) - 1;
