@@ -8,6 +8,8 @@ import static java.lang.Math.abs;
 
 public class Primitives {
 
+    //TODO: rename this to Utils, remove unused code
+
     public static float[] interpolate(float i0, float d0, float i1, float d1) {
         if (i0 == i1) {
             return new float[] { d0 };
@@ -205,5 +207,93 @@ public class Primitives {
     }
     public static Vector2f projectVertex(Vector3f v) {
         return viewportToCanvas(v.getX() * D / v.getZ(), v.getY() * D / v.getZ());
+    }
+
+    public static void renderTriangle(Graphics g, Vector3i triangle, Vector2f[] projected) {
+        drawWireframeTriangle(g,
+                projected[triangle.getX()],
+                projected[triangle.getY()],
+                projected[triangle.getZ()]);
+    }
+
+    public static void renderObject(Graphics g, Vector3f[] vertices, Vector3i[] triangles) {
+        Vector2f[] projected = new Vector2f[vertices.length];
+        for (int i = 0; i < vertices.length; ++i) {
+            projected[i] = projectVertex(vertices[i]);
+        }
+        for (Vector3i triangle : triangles) {
+            renderTriangle(g, triangle, projected);
+        }
+    }
+
+    public static void objectTest(Graphics g) {
+        renderObject(g, new Vector3f[] {
+                new Vector3f(1, 1, 1).add(new Vector3f(-1.5f, 0, 7)),
+                new Vector3f(-1, 1, 1).add(new Vector3f(-1.5f, 0, 7)),
+                new Vector3f(-1, -1, 1).add(new Vector3f(-1.5f, 0, 7)),
+                new Vector3f(1, -1, 1).add(new Vector3f(-1.5f, 0, 7)),
+                new Vector3f(1, 1, -1).add(new Vector3f(-1.5f, 0, 7)),
+                new Vector3f(-1, 1, -1).add(new Vector3f(-1.5f, 0, 7)),
+                new Vector3f(-1, -1, -1).add(new Vector3f(-1.5f, 0, 7)),
+                new Vector3f(1, -1, -1).add(new Vector3f(-1.5f, 0, 7)),
+        }, new Vector3i[] {
+                new Vector3i(0, 1, 2),
+                new Vector3i(0, 2, 3),
+                new Vector3i(4, 0, 3),
+                new Vector3i(4, 3, 7),
+                new Vector3i(5, 4, 7),
+                new Vector3i(5, 7, 6),
+                new Vector3i(1, 5, 6),
+                new Vector3i(1, 6, 2),
+                new Vector3i(4, 5, 1),
+                new Vector3i(4, 1, 0),
+                new Vector3i(2, 6, 7),
+                new Vector3i(2, 7, 3),
+        });
+    }
+
+    public static void primitivesTest(Graphics g) {
+        g.setColor(new Color(0x000000));
+        drawLine(g, new Vector2f(0, 0), new Vector2f(0, -200));
+        drawLine(g, new Vector2f(0, 0), new Vector2f(0, 200));
+        drawLine(g, new Vector2f(0, 0), new Vector2f(-200, 0));
+        drawLine(g, new Vector2f(0, 0), new Vector2f(200, 0));
+        drawLine(g, new Vector2f(0, 0), new Vector2f(-200, 200));
+        drawLine(g, new Vector2f(0, 0), new Vector2f(-200, -200));
+        drawLine(g, new Vector2f(0, 0), new Vector2f(200, 200));
+        drawLine(g, new Vector2f(0, 0), new Vector2f(200, -200));
+
+        g.setColor(new Color(0xFF00FF));
+        drawWireframeTriangle(g, new Vector2f(0, 0), new Vector2f(100, 50), new Vector2f(0, 100));
+        drawFilledTriangle(g, new Vector2f(0, 100), new Vector2f(100, 150), new Vector2f(0, 200));
+        drawShadedTriangle(g, new Vector3f(0, 200, 255), new Vector3f(100, 250, 0), new Vector3f(0, 300, 127));
+
+        var vAf = new Vector3f(-2, -0.5f, 5);
+        var vBf = new Vector3f(-2, 0.5f, 5);
+        var vCf = new Vector3f(-1, 0.5f, 5);
+        var vDf = new Vector3f(-1, -0.5f, 5);
+
+        var vAb = new Vector3f(-2, -0.5f, 6);
+        var vBb = new Vector3f(-2, 0.5f, 6);
+        var vCb = new Vector3f(-1, 0.5f, 6);
+        var vDb = new Vector3f(-1, -0.5f, 6);
+
+        g.setColor(new Color(0x0000FF));
+        drawLine(g, projectVertex(vAf), projectVertex(vBf));
+        drawLine(g, projectVertex(vBf), projectVertex(vCf));
+        drawLine(g, projectVertex(vCf), projectVertex(vDf));
+        drawLine(g, projectVertex(vDf), projectVertex(vAf));
+
+        g.setColor(new Color(0xFF0000));
+        drawLine(g, projectVertex(vAb), projectVertex(vBb));
+        drawLine(g, projectVertex(vBb), projectVertex(vCb));
+        drawLine(g, projectVertex(vCb), projectVertex(vDb));
+        drawLine(g, projectVertex(vDb), projectVertex(vAb));
+
+        g.setColor(new Color(0x00FF00));
+        drawLine(g, projectVertex(vAf), projectVertex(vAb));
+        drawLine(g, projectVertex(vBf), projectVertex(vBb));
+        drawLine(g, projectVertex(vCf), projectVertex(vCb));
+        drawLine(g, projectVertex(vDf), projectVertex(vDb));
     }
 }
