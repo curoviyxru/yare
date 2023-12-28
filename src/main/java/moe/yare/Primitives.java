@@ -62,9 +62,13 @@ public class Primitives {
         }
     }
 
+    public static void setColor(Graphics g, Color c) {
+        g.setColor(new java.awt.Color(c.getX(), c.getY(), c.getZ()));
+    }
+
     public static void putPixel(Graphics g, float x, float y, float z) {
-        Color color = g.getColor();
-        Color shaded = new Color(color.getRed() * (int) z / 255, color.getGreen() * (int) z / 255, color.getBlue() * (int) z / 255);
+        java.awt.Color color = g.getColor();
+        java.awt.Color shaded = new java.awt.Color(color.getRed() * (int) z / 255, color.getGreen() * (int) z / 255, color.getBlue() * (int) z / 255);
 
         x = (Cw >> 1) + (int) x;
         y = (Ch >> 1) - (int) y - 1;
@@ -209,16 +213,30 @@ public class Primitives {
     public static final int Ch = 600; //canvas height
     private static final float Vw = 1; //viewport width
     private static final float Vh = 1; //viewport height
+    private static final float pZ = 1; //projection plane Z
 
     public static Vector2f viewportToCanvas(float x, float y) {
         return new Vector2f(x * Cw / Vw, y * Ch / Vh);
     }
+
+    public static Vector2f canvasToViewport(float x, float y) {
+        return new Vector2f(x * Vw / Cw, y * Vh / Ch);
+    }
+
     public static Vector2f projectVertex(Vector3f v) {
         return viewportToCanvas(v.getX() * D / v.getZ(), v.getY() * D / v.getZ());
     }
 
+    public static Vector3f unprojectVertex(float x, float y, float z) {
+        float oz = 1.0f / z;
+        float ux = x * oz / pZ;
+        float uy = y * oz / pZ;
+        Vector2f p2d = canvasToViewport(ux, uy);
+        return new Vector3f(p2d.getX(), p2d.getY(), oz);
+    }
+
     public static void primitivesTest(Graphics g) {
-        g.setColor(new Color(0x000000));
+        setColor(g, new Color(0, 0, 0));
         drawLine(g, new Vector2f(0, 0), new Vector2f(0, -200));
         drawLine(g, new Vector2f(0, 0), new Vector2f(0, 200));
         drawLine(g, new Vector2f(0, 0), new Vector2f(-200, 0));
@@ -228,7 +246,7 @@ public class Primitives {
         drawLine(g, new Vector2f(0, 0), new Vector2f(200, 200));
         drawLine(g, new Vector2f(0, 0), new Vector2f(200, -200));
 
-        g.setColor(new Color(0xFF00FF));
+        setColor(g, new Color(255, 0, 255));
         drawWireframeTriangle(g, new Vector2f(0, 0), new Vector2f(100, 50), new Vector2f(0, 100));
         drawFilledTriangle(g, new Vector2f(0, 100), new Vector2f(100, 150), new Vector2f(0, 200));
         drawShadedTriangle(g, new Vector3f(0, 200, 255), new Vector3f(100, 250, 0), new Vector3f(0, 300, 127));
@@ -243,19 +261,19 @@ public class Primitives {
         var vCb = new Vector3f(-1, 0.5f, 6);
         var vDb = new Vector3f(-1, -0.5f, 6);
 
-        g.setColor(new Color(0x0000FF));
+        setColor(g, new Color(0, 0, 255));
         drawLine(g, projectVertex(vAf), projectVertex(vBf));
         drawLine(g, projectVertex(vBf), projectVertex(vCf));
         drawLine(g, projectVertex(vCf), projectVertex(vDf));
         drawLine(g, projectVertex(vDf), projectVertex(vAf));
 
-        g.setColor(new Color(0xFF0000));
+        setColor(g, new Color(255, 0, 0));
         drawLine(g, projectVertex(vAb), projectVertex(vBb));
         drawLine(g, projectVertex(vBb), projectVertex(vCb));
         drawLine(g, projectVertex(vCb), projectVertex(vDb));
         drawLine(g, projectVertex(vDb), projectVertex(vAb));
 
-        g.setColor(new Color(0x00FF00));
+        setColor(g, new Color(0, 255, 0));
         drawLine(g, projectVertex(vAf), projectVertex(vAb));
         drawLine(g, projectVertex(vBf), projectVertex(vBb));
         drawLine(g, projectVertex(vCf), projectVertex(vCb));

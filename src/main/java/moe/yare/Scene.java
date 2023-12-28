@@ -8,6 +8,13 @@ import static moe.yare.Primitives.*;
 
 public class Scene {
 
+    private final static int LM_DIFFUSE = 1;
+    private final static int LM_SPECULAR = 2;
+
+    private final static int SM_FLAT = 0;
+    private final static int SM_GOURAUD = 1;
+    private final static int SM_PHONG = 2;
+
     private int TRI_COLORS_OFFSET = 0;
     private Color[] TRI_COLORS = new Color[] {
             new Color(255, 0, 0),
@@ -17,7 +24,7 @@ public class Scene {
             new Color(255, 0, 255),
             new Color(0, 255, 255),
     };
-    private Color EDGE_COLOR = new Color(0);
+    private Color EDGE_COLOR = new Color(0, 0, 0);
 
     //TODO: camera movement
 
@@ -25,7 +32,17 @@ public class Scene {
     boolean backfaceCullingEnabled = true;
     boolean drawOutlines = false;
 
+    int lightingModel = LM_DIFFUSE | LM_SPECULAR;
+    int shadingModel = SM_PHONG;
+    boolean useVertexNormals = true;
+
     private Camera camera = new Camera(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
+
+    private Light[] lights = new Light[] {
+            new Light(Light.Type.AMBIENT, 0.2f, new Vector3f(0, 0, 0)),
+            new Light(Light.Type.DIRECTIONAL, 0.2f, new Vector3f(-1, 0, 1)),
+            new Light(Light.Type.POINT, 0.6f, new Vector3f(-3, 2, -10))
+    };
 
     private final LinkedList<Instance> instances = new LinkedList<>();
 
@@ -63,23 +80,23 @@ public class Scene {
             vertices[i] = transform.mul4f(model.getVertices()[i]);
         }
 
-        Vector3i[] triangles = new Vector3i[model.getTriangles().length];
+        Triangle[] triangles = new Triangle[model.getTriangles().length];
         System.arraycopy(model.getTriangles(), 0, triangles, 0, triangles.length);
         for (Plane clippingPlane : clippingPlanes) {
-            LinkedList<Vector3i> newTriangles = new LinkedList<>();
-            for (Vector3i triangle : triangles) {
+            LinkedList<Triangle> newTriangles = new LinkedList<>();
+            for (Triangle triangle : triangles) {
                 clipTriangle(triangle, clippingPlane, newTriangles, vertices);
             }
-            triangles = newTriangles.toArray(new Vector3i[0]);
+            triangles = newTriangles.toArray(new Triangle[0]);
         }
 
         return new Model(vertices, triangles, center, model.getBoundsRadius());
     }
 
-    private void clipTriangle(Vector3i triangle, Plane clippingPlane, LinkedList<Vector3i> newTriangles, Vector3f[] vertices) {
-        Vector3f v0 = vertices[triangle.getX()];
-        Vector3f v1 = vertices[triangle.getY()];
-        Vector3f v2 = vertices[triangle.getZ()];
+    private void clipTriangle(Triangle triangle, Plane clippingPlane, LinkedList<Triangle> newTriangles, Vector3f[] vertices) {
+        Vector3f v0 = vertices[triangle.getIndexes().getX()];
+        Vector3f v1 = vertices[triangle.getIndexes().getY()];
+        Vector3f v2 = vertices[triangle.getIndexes().getZ()];
 
         int in = 0;
 
@@ -114,8 +131,8 @@ public class Scene {
             projected[i] = projectVertex(vertices[i]);
         }
 
-        for (Vector3i triangle : model.getTriangles()) {
-            renderTriangle(g, triangle, vertices, projected);
+        for (Triangle triangle : model.getTriangles()) {
+            renderTriangle(g, triangle.getIndexes(), vertices, projected);
         }
     }
 
@@ -168,7 +185,7 @@ public class Scene {
 
     public void renderTriangle(Graphics g, Vector3i triangle, Vector3f[] vertices, Vector2f[] projected) {
         TRI_COLORS_OFFSET = (TRI_COLORS_OFFSET + 1) % TRI_COLORS.length;
-        g.setColor(TRI_COLORS[TRI_COLORS_OFFSET]);
+        setColor(g, TRI_COLORS[TRI_COLORS_OFFSET]);
 
         int[] indexes = sortVertexIndexes(triangle, projected);
 
@@ -176,7 +193,9 @@ public class Scene {
         Vector3f v1 = vertices[triangle.getComponent(indexes[1])];
         Vector3f v2 = vertices[triangle.getComponent(indexes[2])];
 
-        Vector3f normal = computeTriangleNormal(vertices[triangle.getX()], vertices[triangle.getY()], vertices[triangle.getZ()]);
+        Vector3f normal = computeTriangleNormal(vertices[triangle.getX()],
+                vertices[triangle.getY()],
+                vertices[triangle.getZ()]);
 
         if (backfaceCullingEnabled) {
             Vector3f vertexToCamera = new Vector3f(camera.getTranslation()).sub(vertices[triangle.getX()]);
@@ -228,7 +247,7 @@ public class Scene {
         }
 
         if (drawOutlines) {
-            g.setColor(EDGE_COLOR);
+            setColor(g, EDGE_COLOR);
             drawLine(g, p0, p1);
             drawLine(g, p0, p2);
             drawLine(g, p2, p1);

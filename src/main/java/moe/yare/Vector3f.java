@@ -95,4 +95,8 @@ public class Vector3f {
     public Vector3f cross(Vector3f v) {
         return new Vector3f(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
     }
+
+    public float magnitude() {
+        return (float) Math.sqrt(dot(this));
+    }
 }

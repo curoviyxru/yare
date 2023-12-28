@@ -5,11 +5,11 @@ import static java.lang.Math.*;
 public class Model {
 
     private Vector3f[] vertices;
-    private Vector3i[] triangles;
+    private Triangle[] triangles;
     private Vector4f boundsCenter;
     private float boundsRadius;
 
-    public Model(Vector3f[] vertices, Vector3i[] triangles) {
+    public Model(Vector3f[] vertices, Triangle[] triangles) {
         this.vertices = vertices;
         this.triangles = triangles;
 
@@ -20,7 +20,7 @@ public class Model {
         this.boundsCenter = boundsCenter;
     }
 
-    public Model(Vector3f[] vertices, Vector3i[] triangles, Vector4f boundsCenter, float boundsRadius) {
+    public Model(Vector3f[] vertices, Triangle[] triangles, Vector4f boundsCenter, float boundsRadius) {
         this.vertices = vertices;
         this.triangles = triangles;
         this.boundsCenter = boundsCenter;
@@ -49,7 +49,7 @@ public class Model {
         return vertices;
     }
 
-    public Vector3i[] getTriangles() {
+    public Triangle[] getTriangles() {
         return triangles;
     }
 
