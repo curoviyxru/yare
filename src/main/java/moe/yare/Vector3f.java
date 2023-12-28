@@ -91,4 +91,8 @@ public class Vector3f {
     public float max() {
         return Math.max(x, Math.max(y, z));
     }
+
+    public Vector3f cross(Vector3f v) {
+        return new Vector3f(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+    }
 }

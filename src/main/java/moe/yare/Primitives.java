@@ -46,7 +46,7 @@ public class Primitives {
 
             float[] ys = interpolate(p0.getX(), p0.getY(), p1.getX(), p1.getY());
             for (float x = p0.getX(); x <= p1.getX(); ++x) {
-                putPixel(g, x, ys[(int) (x - p0.getX())]);
+                putPixel(g, x, ys[(int) x - (int) p0.getX()]);
             }
         } else {
             if (dy < 0) {
@@ -57,7 +57,7 @@ public class Primitives {
 
             float[] xs = interpolate(p0.getY(), p0.getX(), p1.getY(), p1.getX());
             for (float y = p0.getY(); y <= p1.getY(); ++y) {
-                putPixel(g, xs[(int) (y - p0.getY())], y);
+                putPixel(g, xs[(int) y - (int) p0.getY()], y);
             }
         }
     }
@@ -66,8 +66,12 @@ public class Primitives {
         Color color = g.getColor();
         Color shaded = new Color(color.getRed() * (int) z / 255, color.getGreen() * (int) z / 255, color.getBlue() * (int) z / 255);
 
-        x = Cw / 2 + x;
-        y = Ch / 2 - y - 1;
+        x = (Cw >> 1) + (int) x;
+        y = (Ch >> 1) - (int) y - 1;
+
+        if (x < 0 || x >= Cw || y < 0 || y >= Ch) {
+            return;
+        }
 
         g.setColor(shaded);
         g.drawLine((int) x, (int) y, (int) x, (int) y);
@@ -75,8 +79,12 @@ public class Primitives {
     }
 
     public static void putPixel(Graphics g, float x, float y) {
-        x = Cw / 2 + x;
-        y = Ch / 2 - y - 1;
+        x = (Cw >> 1) + (int) x;
+        y = (Ch >> 1) - (int) y - 1;
+
+        if (x < 0 || x >= Cw || y < 0 || y >= Ch) {
+            return;
+        }
 
         g.drawLine((int) x, (int) y, (int) x, (int) y);
     }
@@ -126,7 +134,7 @@ public class Primitives {
         float y0 = p0.getY();
         float y2 = p2.getY();
         for (float y = y0; y <= y2; ++y) {
-            for (float x = x_left[(int) (y - y0)]; x <= x_right[(int) (y - y0)]; ++x) {
+            for (float x = x_left[(int) y - (int) y0]; x <= x_right[(int) y - (int) y0]; ++x) {
                 putPixel(g, x, y);
             }
         }
@@ -158,11 +166,11 @@ public class Primitives {
         float[] x02 = interpolate(p0.getY(), p0.getX(), p2.getY(), p2.getX());
         float[] z02 = interpolate(p0.getY(), p0.getZ(), p2.getY(), p2.getZ());
 
-        float[] x012 = new float[x01.length + x12.length];
+        float[] x012 = new float[x01.length + x12.length - 1];
         System.arraycopy(x01, 0, x012, 0, x01.length - 1);
         System.arraycopy(x12, 0, x012, x01.length - 1, x12.length);
 
-        float[] z012 = new float[z01.length + z12.length];
+        float[] z012 = new float[z01.length + z12.length - 1];
         System.arraycopy(z01, 0, z012, 0, z01.length - 1);
         System.arraycopy(z12, 0, z012, z01.length - 1, z12.length);
 
@@ -186,19 +194,19 @@ public class Primitives {
         float y0 = p0.getY();
         float y2 = p2.getY();
         for (float y = y0; y <= y2; ++y) {
-            float x_l = x_left[(int) (y - y0)];
-            float x_r = x_right[(int) (y - y0)];
+            float x_l = x_left[(int) y - (int) y0];
+            float x_r = x_right[(int) y - (int) y0];
 
-            float[] zs = interpolate(x_l, z_left[(int) (y - y0)], x_r, z_right[(int) (y - y0)]);
+            float[] zs = interpolate(x_l, z_left[(int) y - (int) y0], x_r, z_right[(int) y - (int) y0]);
             for (float x = x_l; x <= x_r; ++x) {
-                putPixel(g, x, y, zs[(int) (x - x_l)]);
+                putPixel(g, x, y, zs[(int) x - (int) x_l]);
             }
         }
     }
 
     private static final float D = 1; //distance from the camera
-    private static final float Cw = 600; //canvas width
-    private static final float Ch = 600; //canvas height
+    public static final int Cw = 600; //canvas width
+    public static final int Ch = 600; //canvas height
     private static final float Vw = 1; //viewport width
     private static final float Vh = 1; //viewport height
 
@@ -207,49 +215,6 @@ public class Primitives {
     }
     public static Vector2f projectVertex(Vector3f v) {
         return viewportToCanvas(v.getX() * D / v.getZ(), v.getY() * D / v.getZ());
-    }
-
-    public static void renderTriangle(Graphics g, Vector3i triangle, Vector2f[] projected) {
-        drawWireframeTriangle(g,
-                projected[triangle.getX()],
-                projected[triangle.getY()],
-                projected[triangle.getZ()]);
-    }
-
-    public static void renderObject(Graphics g, Vector3f[] vertices, Vector3i[] triangles) {
-        Vector2f[] projected = new Vector2f[vertices.length];
-        for (int i = 0; i < vertices.length; ++i) {
-            projected[i] = projectVertex(vertices[i]);
-        }
-        for (Vector3i triangle : triangles) {
-            renderTriangle(g, triangle, projected);
-        }
-    }
-
-    public static void objectTest(Graphics g) {
-        renderObject(g, new Vector3f[] {
-                new Vector3f(1, 1, 1).add(new Vector3f(-1.5f, 0, 7)),
-                new Vector3f(-1, 1, 1).add(new Vector3f(-1.5f, 0, 7)),
-                new Vector3f(-1, -1, 1).add(new Vector3f(-1.5f, 0, 7)),
-                new Vector3f(1, -1, 1).add(new Vector3f(-1.5f, 0, 7)),
-                new Vector3f(1, 1, -1).add(new Vector3f(-1.5f, 0, 7)),
-                new Vector3f(-1, 1, -1).add(new Vector3f(-1.5f, 0, 7)),
-                new Vector3f(-1, -1, -1).add(new Vector3f(-1.5f, 0, 7)),
-                new Vector3f(1, -1, -1).add(new Vector3f(-1.5f, 0, 7)),
-        }, new Vector3i[] {
-                new Vector3i(0, 1, 2),
-                new Vector3i(0, 2, 3),
-                new Vector3i(4, 0, 3),
-                new Vector3i(4, 3, 7),
-                new Vector3i(5, 4, 7),
-                new Vector3i(5, 7, 6),
-                new Vector3i(1, 5, 6),
-                new Vector3i(1, 6, 2),
-                new Vector3i(4, 5, 1),
-                new Vector3i(4, 1, 0),
-                new Vector3i(2, 6, 7),
-                new Vector3i(2, 7, 3),
-        });
     }
 
     public static void primitivesTest(Graphics g) {
