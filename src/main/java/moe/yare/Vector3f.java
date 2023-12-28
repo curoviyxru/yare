@@ -15,9 +15,9 @@ public class Vector3f {
     }
 
     public Vector3f set(Vector3f v) {
-        x = v.getX();
-        y = v.getY();
-        z = v.getZ();
+        x = v.x;
+        y = v.y;
+        z = v.z;
 
         return this;
     }
@@ -61,17 +61,17 @@ public class Vector3f {
     }
 
     public Vector3f add(Vector3f v) {
-        x += v.getX();
-        y += v.getY();
-        z += v.getZ();
+        x += v.x;
+        y += v.y;
+        z += v.z;
 
         return this;
     }
 
     public Vector3f sub(Vector3f v) {
-        x -= v.getX();
-        y -= v.getY();
-        z -= v.getZ();
+        x -= v.x;
+        y -= v.y;
+        z -= v.z;
 
         return this;
     }
@@ -82,5 +82,13 @@ public class Vector3f {
         z *= i;
 
         return this;
+    }
+
+    public float dot(Vector3f v) {
+        return v.x * x + v.y * y + v.z * z;
+    }
+
+    public float max() {
+        return Math.max(x, Math.max(y, z));
     }
 }
