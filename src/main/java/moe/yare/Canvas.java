@@ -2,11 +2,13 @@ package moe.yare;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 public class Canvas extends JPanel {
 
     @Override
     public void paint(Graphics g) {
+        /*
         Model model = new Model(new Vector3f[] {
                 new Vector3f(1, 1, 1),
                 new Vector3f(-1, 1, 1),
@@ -30,6 +32,16 @@ public class Canvas extends JPanel {
                 new Vector3i(2, 6, 7),
                 new Vector3i(2, 7, 3),
         });
+        */
+
+        Model model = null;
+        try {
+            model = ObjParser.getModelFromFile("manki.obj");
+        }
+        catch (IOException e) {
+            System.err.println("Error reading file: " + e.toString());
+            return;
+        }
 
         Instance cube1 = new Instance(model,
                 new Vector3f(-1.5f, 0, 7),
