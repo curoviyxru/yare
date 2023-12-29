@@ -6,7 +6,6 @@ import moe.yare.math.Vector3i;
 import moe.yare.math.Vector4f;
 
 import static java.lang.Math.*;
-import static java.lang.Math.sin;
 
 public class BasicModels {
 

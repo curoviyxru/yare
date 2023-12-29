@@ -6,16 +6,19 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.image.BufferedImage;
 
 public class Canvas extends JPanel {
 
-    private final Scene scene = new Scene(getWidth(), getHeight());
-    private final java.awt.Color textColor = new java.awt.Color(0);
+    private final Scene scene = new Scene(0, 0);
+    private final Color textColor = new Color(0);
+    private BufferedImage renderedImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 
     public Canvas() {
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
+                renderedImage = new BufferedImage(Math.max(1, getWidth()), Math.max(1, getHeight()), BufferedImage.TYPE_INT_ARGB);
                 scene.setSize(getWidth(), getHeight());
             }
         });
@@ -27,7 +30,16 @@ public class Canvas extends JPanel {
 
         long before = System.currentTimeMillis();
         scene.clearDepthBuffer();
-        scene.renderScene(g);
+        scene.clearRect();
+        scene.renderScene();
+        renderedImage.setRGB(0,
+                0,
+                scene.getRenderTexture().getWidth(),
+                scene.getRenderTexture().getHeight(),
+                scene.getRenderTexture().getRGB(),
+                0,
+                scene.getRenderTexture().getWidth());
+        g.drawImage(renderedImage, 0, 0, null);
         long frametime = System.currentTimeMillis() - before;
 
         g.setColor(textColor);

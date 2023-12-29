@@ -1,11 +1,15 @@
 package moe.yare.render;
 
-import moe.yare.math.Vector3i;
+import moe.yare.math.Vector4i;
 
-public class Color extends Vector3i {
+public class Color extends Vector4i {
 
     public Color(int r, int g, int b) {
-        super(r, g, b);
+        this(r, g, b, 255);
+    }
+
+    public Color(int r, int g, int b, int a) {
+        super(r, g, b, a);
     }
 
     public Color(Color color) {
@@ -32,5 +36,9 @@ public class Color extends Vector3i {
         setZ(clamp(getZ() * k));
 
         return this;
+    }
+
+    public int rgb() {
+        return ((getW() & 0xff) << 24) | ((getX() & 0xff) << 16) | ((getY() & 0xff) << 8) | (getZ() & 0xff);
     }
 }

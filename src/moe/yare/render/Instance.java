@@ -15,6 +15,8 @@ public class Instance {
     private Matrix4f transformMatrix;
     private Matrix4f orientationMatrix;
 
+    private final Object lock = new Object();
+
     public Instance(Model model, Vector3f translation, Vector3f rotation, Vector3f scaling) {
         this.model = model;
 
@@ -55,8 +57,34 @@ public class Instance {
         return orientationMatrix;
     }
 
+    public void setModel(Model model) {
+        synchronized (lock) {
+            this.model = model;
+        }
+    }
+
+    public void setTranslation(Vector3f translation) {
+        synchronized (lock) {
+            this.translation = translation;
+            makeTransformMatrix();
+        }
+    }
+
+    public void setScaling(Vector3f scaling) {
+        synchronized (lock) {
+            this.scaling = scaling;
+            makeTransformMatrix();
+        }
+    }
+
     public void setRotation(Vector3f rotation) {
-        this.rotation = rotation;
-        makeTransformMatrix();
+        synchronized (lock) {
+            this.rotation = rotation;
+            makeTransformMatrix();
+        }
+    }
+
+    public Object getLock() {
+        return lock;
     }
 }

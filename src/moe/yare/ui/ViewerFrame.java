@@ -51,9 +51,7 @@ public class ViewerFrame extends JFrame {
         new Thread(() -> {
             while (true) {
                 if (enableYRotationCheckBox.isSelected()) {
-                    synchronized (instance) {
-                        instance.setRotation(new Vector3f(0, instance.getRotation().getY() + 0.3f, 0));
-                    }
+                    instance.setRotation(new Vector3f(0, instance.getRotation().getY() + 1f, 0));
                 }
                 try {
                     Thread.sleep(10);

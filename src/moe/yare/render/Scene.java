@@ -2,7 +2,6 @@ package moe.yare.render;
 
 import moe.yare.math.*;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -16,15 +15,11 @@ public class Scene {
     public enum ShadingType {
         FLAT, GOURAUD, PHONG
     }
-
-    private static final Color EDGE_COLOR = new Color(0, 0, 0);
-    private static final Color STANDARD_COLOR = new Color(255, 255, 255);
     private static final float[][] FAA_STUB = new float[][] { null, null };
-    private static final float D = 1; //distance from the camera
-    private static final float Vw = 1; //viewport width
-    private static final float Vh = 1; //viewport height
-    private static final float pZ = 1; //projection plane Z
 
+    private Color edgeColor = new Color(0, 0, 0);
+    private Color materialColor = new Color(255, 255, 255);
+    private Color backgroundColor = new Color(255, 255, 255);
     private boolean depthBufferingEnabled = true;
     private boolean backfaceCullingEnabled = true;
     private boolean drawOutlines = false;
@@ -35,16 +30,24 @@ public class Scene {
     private boolean usePerspectiveCorrectDepth = true;
     private int Cw; //canvas width
     private int Ch; //canvas height
+    private float Vw = 1; //viewport width
+    private float Vh = 1; //viewport height
     private Float[] depthBuffer;
+    private final Texture renderTexture = new Texture(0, 0, null);
 
     public Scene(int width, int height) {
         setSize(width, height);
     }
 
     public void setSize(int width, int height) {
-        Cw = width;
-        Ch = height;
-        depthBuffer = new Float[width * height];
+        synchronized (renderTexture) {
+            Cw = width;
+            Ch = height;
+            Vw = (float) width / height;
+            Vh = 1;
+            renderTexture.emptyTexture(width, height);
+            depthBuffer = new Float[width * height];
+        }
     }
 
     //TODO: camera movement
@@ -58,6 +61,10 @@ public class Scene {
 
     private final LinkedList<Instance> instances = new LinkedList<>();
 
+    public void clearRect() {
+        renderTexture.fill(backgroundColor);
+    }
+
     public void clearInstances() {
         instances.clear();
     }
@@ -66,13 +73,15 @@ public class Scene {
         instances.add(instance);
     }
 
-    public void renderScene(Graphics g) {
-        for (Instance instance : instances) {
-            synchronized (instance) {
-                Matrix4f transform = camera.getCameraMatrix().mul(instance.getTransformMatrix());
-                Model clippedModel = transformAndClip(instance.getModel(), transform, instance.getScaling().max());
-                if (clippedModel == null) continue;
-                renderModel(g, clippedModel, instance.getOrientationMatrix());
+    public void renderScene() {
+        synchronized (renderTexture) {
+            for (Instance instance : instances) {
+                synchronized (instance.getLock()) {
+                    Matrix4f transform = camera.getCameraMatrix().mul(instance.getTransformMatrix());
+                    Model clippedModel = transformAndClip(instance.getModel(), transform, instance.getScaling().max());
+                    if (clippedModel == null) continue;
+                    renderModel(clippedModel, instance.getOrientationMatrix());
+                }
             }
         }
     }
@@ -141,7 +150,7 @@ public class Scene {
         }
     }
 
-    private void renderModel(Graphics g, Model model, Matrix4f orientation) {
+    private void renderModel(Model model, Matrix4f orientation) {
         Vector3f[] vertices = model.getVertices();
 
         Vector2f[] projected = new Vector2f[vertices.length];
@@ -150,7 +159,7 @@ public class Scene {
         }
 
         for (Triangle triangle : model.getTriangles()) {
-            renderTriangle(g, triangle, vertices, projected, orientation);
+            renderTriangle(triangle, vertices, projected, orientation);
         }
     }
 
@@ -201,7 +210,7 @@ public class Scene {
         return new float[][] { v02, v012 };
     }
 
-    public void renderTriangle(Graphics g, Triangle triangle, Vector3f[] vertices, Vector2f[] projected, Matrix4f orientation) {
+    public void renderTriangle(Triangle triangle, Vector3f[] vertices, Vector2f[] projected, Matrix4f orientation) {
         Vector3i triangleIndexes = triangle.getIndexes();
         int[] indexes = sortVertexIndexes(triangleIndexes, projected);
 
@@ -400,19 +409,17 @@ public class Scene {
                         color = triangle.getTexture().getTexel(u, v);
                     } else if (triangle.getColor() != null) {
                         color = new Color(triangle.getColor());
-                    } else color = new Color(STANDARD_COLOR);
+                    } else color = new Color(materialColor);
 
-                    setColor(g, color.mul(intensity));
-                    putPixel(g, x, y);
+                    putPixel(color.mul(intensity), x, y);
                 }
             }
         }
 
         if (drawOutlines) {
-            setColor(g, EDGE_COLOR);
-            drawLine(g, p0, p1);
-            drawLine(g, p0, p2);
-            drawLine(g, p2, p1);
+            drawLine(edgeColor, p0, p1);
+            drawLine(edgeColor, p0, p2);
+            drawLine(edgeColor, p2, p1);
         }
     }
 
@@ -456,7 +463,9 @@ public class Scene {
     }
 
     public void clearDepthBuffer() {
-        Arrays.fill(depthBuffer, null);
+        synchronized (renderTexture) {
+            Arrays.fill(depthBuffer, null);
+        }
     }
 
     private boolean updateDepthBufferIfCloser(float x, float y, float z) {
@@ -500,7 +509,7 @@ public class Scene {
         return array;
     }
 
-    public void drawLine(Graphics g, Vector2f p0, Vector2f p1) {
+    public void drawLine(Color c, Vector2f p0, Vector2f p1) {
         float dx = p1.getX() - p0.getX();
         float dy = p1.getY() - p0.getY();
 
@@ -513,7 +522,7 @@ public class Scene {
 
             float[] ys = interpolate(p0.getX(), p0.getY(), p1.getX(), p1.getY());
             for (float x = p0.getX(); x <= p1.getX(); ++x) {
-                putPixel(g, x, ys[(int) x - (int) p0.getX()]);
+                putPixel(c, x, ys[(int) x - (int) p0.getX()]);
             }
         } else {
             if (dy < 0) {
@@ -524,16 +533,12 @@ public class Scene {
 
             float[] xs = interpolate(p0.getY(), p0.getX(), p1.getY(), p1.getX());
             for (float y = p0.getY(); y <= p1.getY(); ++y) {
-                putPixel(g, xs[(int) y - (int) p0.getY()], y);
+                putPixel(c, xs[(int) y - (int) p0.getY()], y);
             }
         }
     }
 
-    public void setColor(Graphics g, Color c) {
-        g.setColor(new java.awt.Color(c.getX(), c.getY(), c.getZ()));
-    }
-
-    public void putPixel(Graphics g, float x, float y) {
+    public void putPixel(Color c, float x, float y) {
         x = (Cw >> 1) + (int) x;
         y = (Ch >> 1) - (int) y - 1;
 
@@ -541,7 +546,7 @@ public class Scene {
             return;
         }
 
-        g.drawLine((int) x, (int) y, (int) x, (int) y);
+        renderTexture.getRGB()[((int) y * Cw) + (int) x] = c.rgb();
     }
 
     public Vector2f viewportToCanvas(float x, float y) {
@@ -553,11 +558,15 @@ public class Scene {
     }
 
     public Vector2f projectVertex(Vector3f v) {
-        return viewportToCanvas(v.getX() * D / v.getZ(), v.getY() * D / v.getZ());
+        //distance from the camera
+        float d = 1;
+        return viewportToCanvas(v.getX() * d / v.getZ(), v.getY() * d / v.getZ());
     }
 
     public Vector3f unprojectVertex(float x, float y, float z) {
         float oz = 1.0f / z;
+        //projection plane Z
+        float pZ = 1;
         float ux = x * oz / pZ;
         float uy = y * oz / pZ;
         Vector2f p2d = canvasToViewport(ux, uy);
@@ -626,5 +635,35 @@ public class Scene {
 
     public void setUsePerspectiveCorrectDepth(boolean usePerspectiveCorrectDepth) {
         this.usePerspectiveCorrectDepth = usePerspectiveCorrectDepth;
+    }
+
+    public Color getEdgeColor() {
+        return edgeColor;
+    }
+
+    public Color getMaterialColor() {
+        return materialColor;
+    }
+
+    public Color getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setEdgeColor(Color edgeColor) {
+        this.edgeColor = edgeColor;
+    }
+
+    public void setMaterialColor(Color materialColor) {
+        this.materialColor = materialColor;
+    }
+
+    public void setBackgroundColor(Color backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
+    public Texture getRenderTexture() {
+        synchronized (renderTexture) {
+            return renderTexture;
+        }
     }
 }
