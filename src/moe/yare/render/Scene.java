@@ -4,11 +4,25 @@ import moe.yare.math.*;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 
-import static moe.yare.render.Primitives.*;
+import static java.lang.Math.abs;
 
 public class Scene {
+
+    //TODO: unit tests
+
+    private static final float D = 1; //distance from the camera
+    private static final int Cw = 600; //canvas width
+    private static final int Ch = 600; //canvas height
+    private static final float Vw = 1; //viewport width
+    private static final float Vh = 1; //viewport height
+    private static final float pZ = 1; //projection plane Z
+
+    public void clearInstances() {
+        instances.clear();
+    }
 
     public enum ShadingType {
         FLAT, GOURAUD, PHONG
@@ -449,5 +463,93 @@ public class Scene {
         }
 
         return false;
+    }
+
+    public static float[] interpolate(float i0, float d0, float i1, float d1) {
+        if (i0 == i1) {
+            return new float[] { d0 };
+        }
+
+        LinkedList<Float> values = new LinkedList<>();
+        float a = (d1 - d0) / (i1 - i0);
+        float d = d0;
+        for (float i = i0; i <= i1; ++i) {
+            values.add(d);
+            d += a;
+        }
+        values.add(d); //Just a hack to avoid floating-point precision issues.
+
+        Iterator<Float> it = values.iterator();
+        int i = 0;
+        float[] array = new float[values.size()];
+        while (it.hasNext()) {
+            array[i++] = it.next();
+        }
+
+        return array;
+    }
+
+    public static void drawLine(Graphics g, Vector2f p0, Vector2f p1) {
+        float dx = p1.getX() - p0.getX();
+        float dy = p1.getY() - p0.getY();
+
+        if (abs(dx) > abs(dy)) {
+            if (dx < 0) {
+                Vector2f t = p0;
+                p0 = p1;
+                p1 = t;
+            }
+
+            float[] ys = interpolate(p0.getX(), p0.getY(), p1.getX(), p1.getY());
+            for (float x = p0.getX(); x <= p1.getX(); ++x) {
+                putPixel(g, x, ys[(int) x - (int) p0.getX()]);
+            }
+        } else {
+            if (dy < 0) {
+                Vector2f t = p0;
+                p0 = p1;
+                p1 = t;
+            }
+
+            float[] xs = interpolate(p0.getY(), p0.getX(), p1.getY(), p1.getX());
+            for (float y = p0.getY(); y <= p1.getY(); ++y) {
+                putPixel(g, xs[(int) y - (int) p0.getY()], y);
+            }
+        }
+    }
+
+    public static void setColor(Graphics g, Color c) {
+        g.setColor(new java.awt.Color(c.getX(), c.getY(), c.getZ()));
+    }
+
+    public static void putPixel(Graphics g, float x, float y) {
+        x = (Cw >> 1) + (int) x;
+        y = (Ch >> 1) - (int) y - 1;
+
+        if (x < 0 || x >= Cw || y < 0 || y >= Ch) {
+            return;
+        }
+
+        g.drawLine((int) x, (int) y, (int) x, (int) y);
+    }
+
+    public static Vector2f viewportToCanvas(float x, float y) {
+        return new Vector2f(x * Cw / Vw, y * Ch / Vh);
+    }
+
+    public static Vector2f canvasToViewport(float x, float y) {
+        return new Vector2f(x * Vw / Cw, y * Vh / Ch);
+    }
+
+    public static Vector2f projectVertex(Vector3f v) {
+        return viewportToCanvas(v.getX() * D / v.getZ(), v.getY() * D / v.getZ());
+    }
+
+    public static Vector3f unprojectVertex(float x, float y, float z) {
+        float oz = 1.0f / z;
+        float ux = x * oz / pZ;
+        float uy = y * oz / pZ;
+        Vector2f p2d = canvasToViewport(ux, uy);
+        return new Vector3f(p2d.getX(), p2d.getY(), oz);
     }
 }
