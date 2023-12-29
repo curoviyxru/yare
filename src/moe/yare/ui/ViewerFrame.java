@@ -5,9 +5,9 @@ import moe.yare.io.TextureReader;
 import moe.yare.math.Vector2i;
 import moe.yare.math.Vector3f;
 import moe.yare.render.BasicModels;
-import moe.yare.render.Color;
 import moe.yare.render.Instance;
 import moe.yare.render.Scene;
+import moe.yare.render.Texture;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
@@ -28,7 +28,7 @@ public class ViewerFrame extends JFrame {
     private JCheckBox usePerspectiveCorrectDepthCheckBox;
     private JButton loadAModelButton;
     private JCheckBox enableYRotationCheckBox;
-    private JButton showACrateButton;
+    private JButton showACubeButton;
     private JButton showASphereButton;
     private Canvas canvas;
     private JCheckBox enableXRotationCheckBox;
@@ -46,7 +46,7 @@ public class ViewerFrame extends JFrame {
         setSize(800, 600);
         setTitle("YARE");
 
-        setCrate();
+        setCube();
 
         new Thread(() -> {
             while (true) {
@@ -104,7 +104,7 @@ public class ViewerFrame extends JFrame {
         });
 
         showASphereButton.addActionListener(e -> setSphere());
-        showACrateButton.addActionListener(e -> setCrate());
+        showACubeButton.addActionListener(e -> setCube());
         loadAModelButton.addActionListener(e -> setModel());
 
         flatRadioButton.addActionListener(e -> canvas.getScene().setShadingModel(Scene.ShadingType.FLAT));
@@ -126,18 +126,33 @@ public class ViewerFrame extends JFrame {
         });
     }
 
-    private void setCrate() {
+    private void setCube() {
+        Texture texture = null;
+        try {
+            texture = TextureReader.loadTexture("crate1_diffuse.png");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         canvas.getScene().clearInstances();
-        canvas.getScene().addInstance(instance = new Instance(BasicModels.getCube(TextureReader.loadTexture("crate1_diffuse.png")),
+        canvas.getScene().addInstance(instance = new Instance(
+                BasicModels.getCube(texture),
                 new Vector3f(0, 0, 7),
                 new Vector3f(0, 0, 0),
                 new Vector3f(1, 1, 1)));
     }
 
     private void setSphere() {
+        Texture texture = null;
+        try {
+            texture = TextureReader.loadTexture("earth.png");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         canvas.getScene().clearInstances();
         canvas.getScene().addInstance(instance = new Instance(
-                BasicModels.getSphere(30),
+                BasicModels.getSphere(texture, 30),
                 new Vector3f(0, 0, 7),
                 new Vector3f(0, 0, 0),
                 new Vector3f(2, 2, 2)));

@@ -9,6 +9,10 @@ public class Vector2f {
         set(x, y);
     }
 
+    public Vector2f(Vector2f v) {
+        set(v.x, v.y);
+    }
+
     public float getX() {
         return x;
     }
@@ -22,11 +26,15 @@ public class Vector2f {
         this.y = y;
     }
 
-    public void setX(float x) {
+    public Vector2f setX(float x) {
         this.x = x;
+
+        return this;
     }
 
-    public void setY(float y) {
+    public Vector2f setY(float y) {
         this.y = y;
+
+        return this;
     }
 }

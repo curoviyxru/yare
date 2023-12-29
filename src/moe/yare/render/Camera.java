@@ -8,12 +8,14 @@ import static moe.yare.render.Transform.*;
 public class Camera {
 
     private static final float S2 = 1.0f / (float) Math.sqrt(2);
+
+    //TODO: far plane?
     private static final Plane[] clippingPlanes = new Plane[] {
-            new Plane(new Vector3f(0, 0, 1), -1),
-            new Plane(new Vector3f(S2, 0, S2), 0),
-            new Plane(new Vector3f(-S2, 0, S2), 0),
-            new Plane(new Vector3f(0, -S2, S2), 0),
-            new Plane(new Vector3f(0, S2, S2), 0)
+            new Plane(new Vector3f(0, 0, 1), -1), //near
+            new Plane(new Vector3f(S2, 0, S2), 0), //left
+            new Plane(new Vector3f(-S2, 0, S2), 0), //right
+            new Plane(new Vector3f(0, -S2, S2), 0), //top
+            new Plane(new Vector3f(0, S2, S2), 0) //bottom
     };
 
     private Vector3f translation;
