@@ -4,9 +4,8 @@ import static moe.yare.Transform.*;
 
 public class Camera {
 
-    //TODO: make these static?
-    private final float S2 = 1.0f / (float) Math.sqrt(2);
-    private final Plane[] clippingPlanes = new Plane[] {
+    private static final float S2 = 1.0f / (float) Math.sqrt(2);
+    private static final Plane[] clippingPlanes = new Plane[] {
             new Plane(new Vector3f(0, 0, 1), -1),
             new Plane(new Vector3f(S2, 0, S2), 0),
             new Plane(new Vector3f(-S2, 0, S2), 0),

@@ -14,14 +14,6 @@ public class Vector3f {
         set(v);
     }
 
-    public Vector3f set(Vector3f v) {
-        x = v.x;
-        y = v.y;
-        z = v.z;
-
-        return this;
-    }
-
     public float getX() {
         return x;
     }
@@ -34,30 +26,28 @@ public class Vector3f {
         return z;
     }
 
-    public Vector3f set(float x, float y, float z) {
+    public void set(Vector3f v) {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+    }
+
+    public void set(float x, float y, float z) {
         this.x = x;
         this.y = y;
         this.z = z;
-
-        return this;
     }
 
-    public Vector3f setX(float x) {
+    public void setX(float x) {
         this.x = x;
-
-        return this;
     }
 
-    public Vector3f setY(float y) {
+    public void setY(float y) {
         this.y = y;
-
-        return this;
     }
 
-    public Vector3f setZ(float z) {
+    public void setZ(float z) {
         this.z = z;
-
-        return this;
     }
 
     public Vector3f add(Vector3f v) {

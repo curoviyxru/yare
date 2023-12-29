@@ -2,8 +2,6 @@ package moe.yare;
 
 public class Vector4f extends Vector3f {
 
-    //TODO: streamline every vector implementation
-
     private float w;
 
     public Vector4f(float x, float y, float z, float w) {
@@ -15,9 +13,7 @@ public class Vector4f extends Vector3f {
         return w;
     }
 
-    public Vector4f setW(float w) {
+    public void setW(float w) {
         this.w = w;
-
-        return this;
     }
 }

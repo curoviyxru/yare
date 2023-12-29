@@ -12,33 +12,30 @@ public class Scene {
         FLAT, GOURAUD, PHONG
     }
 
-    private Color EDGE_COLOR = new Color(0, 0, 0);
-    private Color STANDARD_COLOR = new Color(255, 255, 255);
+    private static final Color EDGE_COLOR = new Color(0, 0, 0);
+    private static final Color STANDARD_COLOR = new Color(255, 255, 255);
+    private static final float[][] FAA_STUB = new float[][] { null, null };
+
+    private final Float[] depthBuffer = new Float[Cw * Ch];
+    private boolean depthBufferingEnabled = true;
+    private boolean backfaceCullingEnabled = true;
+    private boolean drawOutlines = false;
+    private boolean isLightDiffuse = true;
+    private boolean isLightSpecular = true;
+    private ShadingType shadingModel = ShadingType.PHONG;
+    private boolean useVertexNormals = true;
+    private boolean usePerspectiveCorrectDepth = true;
 
     //TODO: camera movement
+    private final Camera camera = new Camera(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
 
-    boolean depthBufferingEnabled = true;
-    boolean backfaceCullingEnabled = true;
-    boolean drawOutlines = false;
-    boolean isLightDiffuse = true;
-    boolean isLightSpecular = true;
-    ShadingType shadingModel = ShadingType.PHONG;
-    boolean useVertexNormals = true;
-    boolean usePerspectiveCorrectDepth = true;
-
-    private Camera camera = new Camera(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
-
-    private Light[] lights = new Light[] {
+    private final Light[] lights = new Light[] {
             new Light(Light.Type.AMBIENT, 0.2f, new Vector3f(0, 0, 0)),
             new Light(Light.Type.DIRECTIONAL, 0.2f, new Vector3f(-1, 0, 1)),
             new Light(Light.Type.POINT, 0.6f, new Vector3f(-3, 2, -10))
     };
 
     private final LinkedList<Instance> instances = new LinkedList<>();
-
-    public Scene() {
-
-    }
 
     public void addInstance(Instance instance) {
         instances.add(instance);
@@ -177,8 +174,6 @@ public class Scene {
         return new float[][] { v02, v012 };
     }
 
-    //TODO: remove redundant float[] (these that are before left/right condition)
-    //TODO: extract (int) y - (int) y0 to variable
     public void renderTriangle(Graphics g, Triangle triangle, Vector3f[] vertices, Vector2f[] projected, Matrix4f orientation) {
         Vector3i triangleIndexes = triangle.getIndexes();
         int[] indexes = sortVertexIndexes(triangleIndexes, projected);
@@ -205,34 +200,23 @@ public class Scene {
         float[][] ei1 = edgeInterpolate(p0.getY(), p0.getX(), p1.getY(), p1.getX(), p2.getY(), p2.getX());
         float[][] ei2 = edgeInterpolate(p0.getY(), 1.0f / v0.getZ(), p1.getY(), 1.0f / v1.getZ(), p2.getY(), 1.0f / v2.getZ());
 
-        float[] x02 = ei1[0], x012 = ei1[1];
-        float[] iz02 = ei2[0], iz012 = ei2[1];
-
-        float[] uz02 = null, uz012 = null, vz02 = null, vz012 = null;
+        float[][] uz = FAA_STUB, vz = FAA_STUB;
         if (triangle.getTexture() != null) {
             Vector2f[] uvs = triangle.getUVs();
             if (usePerspectiveCorrectDepth) {
-                float[][] uz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getX() / v0.getZ(),
+                uz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getX() / v0.getZ(),
                                                 p1.getY(), uvs[indexes[1]].getX() / v1.getZ(),
                                                 p2.getY(), uvs[indexes[2]].getX() / v2.getZ());
-                uz02 = uz[0];
-                uz012 = uz[1];
-                float[][] vz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getY() / v0.getZ(),
+                vz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getY() / v0.getZ(),
                                                 p1.getY(), uvs[indexes[1]].getY() / v1.getZ(),
                                                 p2.getY(), uvs[indexes[2]].getY() / v2.getZ());
-                vz02 = vz[0];
-                vz012 = vz[1];
             } else {
-                float[][] uz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getX(),
+                uz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getX(),
                                                 p1.getY(), uvs[indexes[1]].getX(),
                                                 p2.getY(), uvs[indexes[2]].getX());
-                uz02 = uz[0];
-                uz012 = uz[1];
-                float[][] vz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getY(),
+                vz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getY(),
                                                 p1.getY(), uvs[indexes[1]].getY(),
                                                 p2.getY(), uvs[indexes[2]].getY());
-                vz02 = vz[0];
-                vz012 = vz[1];
             }
         }
 
@@ -247,7 +231,7 @@ public class Scene {
         }
 
         float intensity = 0;
-        float[] i02 = null, i012 = null, nx02 = null, nx012 = null, ny02 = null, ny012 = null, nz02 = null, nz012 = null;
+        float[][] ii = FAA_STUB, nx = FAA_STUB, ny = FAA_STUB, nz = FAA_STUB;
         switch (shadingModel) {
             case FLAT -> {
                 Vector3f center = new Vector3f((v0.getX() + v1.getX() + v2.getX()) / 3,
@@ -259,24 +243,16 @@ public class Scene {
                 float i0 = computeIllumination(v0, normal0);
                 float i1 = computeIllumination(v1, normal1);
                 float i2 = computeIllumination(v2, normal2);
-                float[][] ei = edgeInterpolate(p0.getY(), i0, p1.getY(), i1, p2.getY(), i2);
-                i02 = ei[0];
-                i012 = ei[1];
+                ii = edgeInterpolate(p0.getY(), i0, p1.getY(), i1, p2.getY(), i2);
             }
             case PHONG -> {
-                float[][] xei = edgeInterpolate(p0.getY(), normal0.getX(), p1.getY(), normal1.getX(), p2.getY(), normal2.getX());
-                nx02 = xei[0];
-                nx012 = xei[1];
-                float[][] yei = edgeInterpolate(p0.getY(), normal0.getY(), p1.getY(), normal1.getY(), p2.getY(), normal2.getY());
-                ny02 = yei[0];
-                ny012 = yei[1];
-                float[][] zei = edgeInterpolate(p0.getY(), normal0.getZ(), p1.getY(), normal1.getZ(), p2.getY(), normal2.getZ());
-                nz02 = zei[0];
-                nz012 = zei[1];
+                nx = edgeInterpolate(p0.getY(), normal0.getX(), p1.getY(), normal1.getX(), p2.getY(), normal2.getX());
+                ny = edgeInterpolate(p0.getY(), normal0.getY(), p1.getY(), normal1.getY(), p2.getY(), normal2.getY());
+                nz = edgeInterpolate(p0.getY(), normal0.getZ(), p1.getY(), normal1.getZ(), p2.getY(), normal2.getZ());
             }
         }
 
-        int m = x02.length / 2;
+        int m = ei1[0].length / 2;
         float[] x_left, x_right;
         float[] iz_left, iz_right;
         float[] i_left, i_right;
@@ -285,107 +261,97 @@ public class Scene {
         float[] nz_left, nz_right;
         float[] uz_left, uz_right;
         float[] vz_left, vz_right;
-        if (x02[m] < x012[m]) {
-            x_left = x02;
-            x_right = x012;
+        if (ei1[0][m] < ei1[1][m]) {
+            x_left = ei1[0];
+            x_right = ei1[1];
 
-            iz_left = iz02;
-            iz_right = iz012;
+            iz_left = ei2[0];
+            iz_right = ei2[1];
 
-            i_left = i02;
-            i_right = i012;
+            i_left = ii[0];
+            i_right = ii[1];
 
-            nx_left = nx02;
-            nx_right = nx012;
+            nx_left = nx[0];
+            nx_right = nx[1];
 
-            ny_left = ny02;
-            ny_right = ny012;
+            ny_left = ny[0];
+            ny_right = ny[1];
 
-            nz_left = nz02;
-            nz_right = nz012;
+            nz_left = nz[0];
+            nz_right = nz[1];
 
-            uz_left = uz02;
-            uz_right = uz012;
+            uz_left = uz[0];
+            uz_right = uz[1];
 
-            vz_left = vz02;
-            vz_right = vz012;
+            vz_left = vz[0];
+            vz_right = vz[1];
         } else {
-            x_left = x012;
-            x_right = x02;
+            x_left = ei1[1];
+            x_right = ei1[0];
 
-            iz_left = iz012;
-            iz_right = iz02;
+            iz_left = ei2[1];
+            iz_right = ei2[0];
 
-            i_left = i012;
-            i_right = i02;
+            i_left = ii[1];
+            i_right = ii[0];
 
-            nx_left = nx012;
-            nx_right = nx02;
+            nx_left = nx[1];
+            nx_right = nx[0];
 
-            ny_left = ny012;
-            ny_right = ny02;
+            ny_left = ny[1];
+            ny_right = ny[0];
 
-            nz_left = nz012;
-            nz_right = nz02;
+            nz_left = nz[1];
+            nz_right = nz[0];
 
-            uz_left = uz012;
-            uz_right = uz02;
+            uz_left = uz[1];
+            uz_right = uz[0];
 
-            vz_left = vz012;
-            vz_right = vz02;
+            vz_left = vz[1];
+            vz_right = vz[0];
         }
 
         float y0 = p0.getY();
         float y2 = p2.getY();
         for (float y = y0; y <= y2; ++y) {
-            float xl = x_left[(int) y - (int) y0], xr = x_right[(int) y - (int) y0];
+            int yy0 = (int) y - (int) y0;
+            float xl = x_left[yy0], xr = x_right[yy0];
 
-            float zl = iz_left[(int) y - (int) y0], zr = iz_right[(int) y - (int) y0];
+            float zl = iz_left[yy0], zr = iz_right[yy0];
             float[] zs = interpolate(xl, zl, xr, zr);
 
             float[] is = null, nxs = null, nys = null, nzs = null;
             switch (shadingModel) {
                 case GOURAUD -> {
-                    assert i_left != null;
-                    assert i_right != null;
-                    is = interpolate(xl, i_left[(int) y - (int) y0], xr, i_right[(int) y - (int) y0]);
+                    is = interpolate(xl, i_left[yy0], xr, i_right[yy0]);
                 }
                 case PHONG -> {
-                    assert nx_left != null;
-                    assert nx_right != null;
-                    nxs = interpolate(xl, nx_left[(int) y - (int) y0], xr, nx_right[(int) y - (int) y0]);
-                    assert ny_left != null;
-                    assert ny_right != null;
-                    nys = interpolate(xl, ny_left[(int) y - (int) y0], xr, ny_right[(int) y - (int) y0]);
-                    assert nz_left != null;
-                    assert nz_right != null;
-                    nzs = interpolate(xl, nz_left[(int) y - (int) y0], xr, nz_right[(int) y - (int) y0]);
+                    nxs = interpolate(xl, nx_left[yy0], xr, nx_right[yy0]);
+                    nys = interpolate(xl, ny_left[yy0], xr, ny_right[yy0]);
+                    nzs = interpolate(xl, nz_left[yy0], xr, nz_right[yy0]);
                 }
             }
 
             float[] uzs = null, vzs = null;
             if (triangle.getTexture() != null) {
-                assert uz_left != null;
-                assert uz_right != null;
-                uzs = interpolate(xl, uz_left[(int) y - (int) y0], xr, uz_right[(int) y - (int) y0]);
-                assert vz_left != null;
-                assert vz_right != null;
-                vzs = interpolate(xl, vz_left[(int) y - (int) y0], xr, vz_right[(int) y - (int) y0]);
+                uzs = interpolate(xl, uz_left[yy0], xr, uz_right[yy0]);
+                vzs = interpolate(xl, vz_left[yy0], xr, vz_right[yy0]);
             }
 
             for (float x = xl; x <= xr; ++x) {
-                if (!depthBufferingEnabled || updateDepthBufferIfCloser(x, y, zs[(int) x - (int) xl])) {
+                int xxl = (int) x - (int) xl;
+                if (!depthBufferingEnabled || updateDepthBufferIfCloser(x, y, zs[xxl])) {
                     switch (shadingModel) {
                         case GOURAUD -> {
                             assert is != null;
-                            intensity = is[(int) x - (int) xl];
+                            intensity = is[xxl];
                         }
                         case PHONG -> {
-                            Vector3f vertex = unprojectVertex(x, y, zs[(int) x - (int) xl]);
+                            Vector3f vertex = unprojectVertex(x, y, zs[xxl]);
                             assert nxs != null;
                             assert nys != null;
                             assert nzs != null;
-                            Vector4f normalV = new Vector4f(nxs[(int) x - (int) xl], nys[(int) x - (int) xl], nzs[(int) x - (int) xl], 1);
+                            Vector4f normalV = new Vector4f(nxs[xxl], nys[xxl], nzs[xxl], 1);
                             intensity = computeIllumination(vertex, normalV);
                         }
                     }
@@ -397,11 +363,11 @@ public class Scene {
                         assert uzs != null;
                         assert vzs != null;
                         if (usePerspectiveCorrectDepth) {
-                            u = uzs[(int) x - (int) xl] / zs[(int) x - (int) xl];
-                            v = vzs[(int) x - (int) xl] / zs[(int) x - (int) xl];
+                            u = uzs[xxl] / zs[xxl];
+                            v = vzs[xxl] / zs[xxl];
                         } else {
-                            u = uzs[(int) x - (int) xl];
-                            v = vzs[(int) x - (int) xl];
+                            u = uzs[xxl];
+                            v = vzs[xxl];
                         }
 
                         color = triangle.getTexture().getTexel(u, v);
@@ -427,19 +393,15 @@ public class Scene {
         Vector3f nV = new Vector3f(vertex).mul(-1);
         float illumination = 0;
 
-        for (int l = 0; l < lights.length; ++l) {
-            Light light = lights[l];
-
+        for (Light light : lights) {
             Vector3f v1 = null;
             switch (light.getType()) {
                 case AMBIENT -> {
                     illumination += light.getIntensity();
                     continue;
                 }
-                case DIRECTIONAL ->
-                        v1 = camera.getTransposedRotationMatrix().mul(light.getVector(), 1);
-                case POINT ->
-                        v1 = camera.getCameraMatrix().mul(light.getVector(), 1).add(nV);
+                case DIRECTIONAL -> v1 = camera.getTransposedRotationMatrix().mul(light.getVector(), 1);
+                case POINT -> v1 = camera.getCameraMatrix().mul(light.getVector(), 1).add(nV);
             }
 
             if (isLightDiffuse) {
@@ -465,8 +427,6 @@ public class Scene {
 
         return illumination;
     }
-
-    Float[] depthBuffer = new Float[Cw * Ch];
 
     private void clearDepthBuffer() {
         Arrays.fill(depthBuffer, null);

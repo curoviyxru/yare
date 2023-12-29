@@ -14,14 +14,6 @@ public class Vector3i {
         set(v);
     }
 
-    private Vector3i set(Vector3i v) {
-        x = v.x;
-        y = v.y;
-        z = v.z;
-
-        return this;
-    }
-
     public int getX() {
         return x;
     }
@@ -38,6 +30,12 @@ public class Vector3i {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    private void set(Vector3i v) {
+        x = v.x;
+        y = v.y;
+        z = v.z;
     }
 
     public void setX(int x) {
