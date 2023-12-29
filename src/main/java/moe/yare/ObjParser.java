@@ -147,13 +147,12 @@ public class ObjParser {
     }
 
     private static Texture parseTexturePNG(String filename) throws IOException {
-        int[] pixels = null;
         BufferedImage image = ImageIO.read(new File(filename));
 
         int width = image.getWidth();
         int height = image.getHeight();
 
-        pixels = new int[width * height];
+        int[] pixels = new int[width * height];
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {

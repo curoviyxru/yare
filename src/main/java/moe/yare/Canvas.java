@@ -2,6 +2,7 @@ package moe.yare;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 import static java.lang.Math.*;
 
@@ -71,18 +72,26 @@ public class Canvas extends JPanel {
                 new Triangle(new Vector3i(2, 6, 7), CYAN,   new Vector3f[] { new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0) }),
                 new Triangle(new Vector3i(2, 7, 3), CYAN,   new Vector3f[] { new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0) }),
         });
+        Model model1 = null;
+        try {
+            model = ObjParser.getModelFromFile("mankismooth.obj");
+            model1 = ObjParser.getModelFromFile("manki.obj");
+        }
+        catch (IOException e) {
+
+        }
 
         Instance cube1 = new Instance(model,
                 new Vector3f(-1.5f, 0, 7),
-                new Vector3f(0, 0, 0),
+                new Vector3f(0, 180, 0),
                 new Vector3f(0.75f, 0.75f, 0.75f));
-        Instance cube2 = new Instance(model,
+        Instance cube2 = new Instance(model1,
                 new Vector3f(1.25f, 2.5f, 7.5f),
-                new Vector3f(0, 0, 0),
+                new Vector3f(0, 180, 0),
                 new Vector3f(1f, 1f, 1f));
-        Instance cube3 = new Instance(model,
+        Instance cube3 = new Instance(model1,
                 new Vector3f(0, 0, -20f),
-                new Vector3f(0, 0, 0),
+                new Vector3f(0, 180, 0),
                 new Vector3f(1f, 1f, 1f));
         Instance sphere = new Instance(generateSphere(15, GREEN),
                 new Vector3f(1.75f, -0.5f, 7f),
