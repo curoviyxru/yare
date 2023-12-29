@@ -10,6 +10,7 @@ import moe.yare.math.Vector3i;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.LinkedList;
 
 public class ObjReader {
@@ -53,7 +54,12 @@ public class ObjReader {
                 if (line.startsWith("usemtl ")) {
                     String filename = line.split("\\s+")[1];
                     try {
-                        currentTexture = TextureReader.loadTexture(filename);
+                        currentTexture = TextureReader.loadTexture(Path.of(filepath)
+                                .toAbsolutePath()
+                                .getParent()
+                                .resolve(filename)
+                                .toAbsolutePath()
+                                .toString());
                     }
                     catch (Exception ex) {
                         currentTexture = null;

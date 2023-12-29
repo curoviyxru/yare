@@ -13,17 +13,6 @@ public class Scene {
 
     //TODO: unit tests
 
-    private static final float D = 1; //distance from the camera
-    private static final int Cw = 600; //canvas width
-    private static final int Ch = 600; //canvas height
-    private static final float Vw = 1; //viewport width
-    private static final float Vh = 1; //viewport height
-    private static final float pZ = 1; //projection plane Z
-
-    public void clearInstances() {
-        instances.clear();
-    }
-
     public enum ShadingType {
         FLAT, GOURAUD, PHONG
     }
@@ -31,8 +20,11 @@ public class Scene {
     private static final Color EDGE_COLOR = new Color(0, 0, 0);
     private static final Color STANDARD_COLOR = new Color(255, 255, 255);
     private static final float[][] FAA_STUB = new float[][] { null, null };
+    private static final float D = 1; //distance from the camera
+    private static final float Vw = 1; //viewport width
+    private static final float Vh = 1; //viewport height
+    private static final float pZ = 1; //projection plane Z
 
-    private final Float[] depthBuffer = new Float[Cw * Ch];
     private boolean depthBufferingEnabled = true;
     private boolean backfaceCullingEnabled = true;
     private boolean drawOutlines = false;
@@ -41,6 +33,19 @@ public class Scene {
     private ShadingType shadingModel = ShadingType.PHONG;
     private boolean useVertexNormals = true;
     private boolean usePerspectiveCorrectDepth = true;
+    private int Cw; //canvas width
+    private int Ch; //canvas height
+    private Float[] depthBuffer;
+
+    public Scene(int width, int height) {
+        setSize(width, height);
+    }
+
+    public void setSize(int width, int height) {
+        Cw = width;
+        Ch = height;
+        depthBuffer = new Float[width * height];
+    }
 
     //TODO: camera movement
     private final Camera camera = new Camera(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
@@ -53,16 +58,22 @@ public class Scene {
 
     private final LinkedList<Instance> instances = new LinkedList<>();
 
+    public void clearInstances() {
+        instances.clear();
+    }
+
     public void addInstance(Instance instance) {
         instances.add(instance);
     }
 
     public void renderScene(Graphics g) {
         for (Instance instance : instances) {
-            Matrix4f transform = camera.getCameraMatrix().mul(instance.getTransformMatrix());
-            Model clippedModel = transformAndClip(instance.getModel(), transform, instance.getScaling().max());
-            if (clippedModel == null) continue;
-            renderModel(g, clippedModel, instance.getOrientationMatrix());
+            synchronized (instance) {
+                Matrix4f transform = camera.getCameraMatrix().mul(instance.getTransformMatrix());
+                Model clippedModel = transformAndClip(instance.getModel(), transform, instance.getScaling().max());
+                if (clippedModel == null) continue;
+                renderModel(g, clippedModel, instance.getOrientationMatrix());
+            }
         }
     }
 
@@ -444,7 +455,7 @@ public class Scene {
         return illumination;
     }
 
-    private void clearDepthBuffer() {
+    public void clearDepthBuffer() {
         Arrays.fill(depthBuffer, null);
     }
 
@@ -465,7 +476,7 @@ public class Scene {
         return false;
     }
 
-    public static float[] interpolate(float i0, float d0, float i1, float d1) {
+    public float[] interpolate(float i0, float d0, float i1, float d1) {
         if (i0 == i1) {
             return new float[] { d0 };
         }
@@ -489,7 +500,7 @@ public class Scene {
         return array;
     }
 
-    public static void drawLine(Graphics g, Vector2f p0, Vector2f p1) {
+    public void drawLine(Graphics g, Vector2f p0, Vector2f p1) {
         float dx = p1.getX() - p0.getX();
         float dy = p1.getY() - p0.getY();
 
@@ -518,11 +529,11 @@ public class Scene {
         }
     }
 
-    public static void setColor(Graphics g, Color c) {
+    public void setColor(Graphics g, Color c) {
         g.setColor(new java.awt.Color(c.getX(), c.getY(), c.getZ()));
     }
 
-    public static void putPixel(Graphics g, float x, float y) {
+    public void putPixel(Graphics g, float x, float y) {
         x = (Cw >> 1) + (int) x;
         y = (Ch >> 1) - (int) y - 1;
 
@@ -533,23 +544,87 @@ public class Scene {
         g.drawLine((int) x, (int) y, (int) x, (int) y);
     }
 
-    public static Vector2f viewportToCanvas(float x, float y) {
+    public Vector2f viewportToCanvas(float x, float y) {
         return new Vector2f(x * Cw / Vw, y * Ch / Vh);
     }
 
-    public static Vector2f canvasToViewport(float x, float y) {
+    public Vector2f canvasToViewport(float x, float y) {
         return new Vector2f(x * Vw / Cw, y * Vh / Ch);
     }
 
-    public static Vector2f projectVertex(Vector3f v) {
+    public Vector2f projectVertex(Vector3f v) {
         return viewportToCanvas(v.getX() * D / v.getZ(), v.getY() * D / v.getZ());
     }
 
-    public static Vector3f unprojectVertex(float x, float y, float z) {
+    public Vector3f unprojectVertex(float x, float y, float z) {
         float oz = 1.0f / z;
         float ux = x * oz / pZ;
         float uy = y * oz / pZ;
         Vector2f p2d = canvasToViewport(ux, uy);
         return new Vector3f(p2d.getX(), p2d.getY(), oz);
+    }
+
+    public boolean isDepthBufferingEnabled() {
+        return depthBufferingEnabled;
+    }
+
+    public boolean isBackfaceCullingEnabled() {
+        return backfaceCullingEnabled;
+    }
+
+    public boolean isDrawOutlines() {
+        return drawOutlines;
+    }
+
+    public boolean isLightDiffuse() {
+        return isLightDiffuse;
+    }
+
+    public boolean isLightSpecular() {
+        return isLightSpecular;
+    }
+
+    public ShadingType getShadingModel() {
+        return shadingModel;
+    }
+
+    public boolean isUseVertexNormals() {
+        return useVertexNormals;
+    }
+
+    public boolean isUsePerspectiveCorrectDepth() {
+        return usePerspectiveCorrectDepth;
+    }
+
+    public void setDepthBufferingEnabled(boolean depthBufferingEnabled) {
+        this.depthBufferingEnabled = depthBufferingEnabled;
+    }
+
+    public void setBackfaceCullingEnabled(boolean backfaceCullingEnabled) {
+        this.backfaceCullingEnabled = backfaceCullingEnabled;
+    }
+
+    public void setDrawOutlines(boolean drawOutlines) {
+        this.drawOutlines = drawOutlines;
+    }
+
+    public void setLightDiffuse(boolean lightDiffuse) {
+        isLightDiffuse = lightDiffuse;
+    }
+
+    public void setLightSpecular(boolean lightSpecular) {
+        isLightSpecular = lightSpecular;
+    }
+
+    public void setShadingModel(ShadingType shadingModel) {
+        this.shadingModel = shadingModel;
+    }
+
+    public void setUseVertexNormals(boolean useVertexNormals) {
+        this.useVertexNormals = useVertexNormals;
+    }
+
+    public void setUsePerspectiveCorrectDepth(boolean usePerspectiveCorrectDepth) {
+        this.usePerspectiveCorrectDepth = usePerspectiveCorrectDepth;
     }
 }

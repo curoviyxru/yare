@@ -22,6 +22,10 @@ public class Instance {
         this.rotation = rotation;
         this.scaling = scaling;
 
+        makeTransformMatrix();
+    }
+
+    private void makeTransformMatrix() {
         this.transformMatrix = makeTranslationMatrix(translation)
                 .mul(orientationMatrix = makeRotationMatrix(rotation))
                 .mul(makeScalingMatrix(scaling));
@@ -49,5 +53,10 @@ public class Instance {
 
     public Matrix4f getOrientationMatrix() {
         return orientationMatrix;
+    }
+
+    public void setRotation(Vector3f rotation) {
+        this.rotation = rotation;
+        makeTransformMatrix();
     }
 }
