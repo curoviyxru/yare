@@ -217,7 +217,7 @@ public class Scene {
         int m = x02.length / 2;
         float[] x_left, x_right;
         float[] iz_left, iz_right;
-        if (x02[m] < x012[m]) {
+        if (x02.length > m && x012.length > m && x02[m] < x012[m]) {
             x_left = x02;
             x_right = x012;
 
@@ -234,6 +234,7 @@ public class Scene {
         float y0 = p0.getY();
         float y2 = p2.getY();
         for (float y = y0; y <= y2; ++y) {
+            if ((int) y - (int) y0 >= x_left.length || x_right.length <= (int) y - (int) y0) continue;
             float xl = x_left[(int) y - (int) y0], xr = x_right[(int) y - (int) y0];
 
             float zl = iz_left[(int) y - (int) y0], zr = iz_right[(int) y - (int) y0];

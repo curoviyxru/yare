@@ -49,10 +49,10 @@ public class Canvas extends JPanel {
 
         Instance cube1 = new Instance(model,
                 new Vector3f(-1.5f, 0, 7),
-                new Vector3f(0, 0, 0),
+                new Vector3f(0, 180, 0),
                 new Vector3f(1.5f, 1.5f, 1.5f));
         Instance cube2 = new Instance(model,
-                new Vector3f(1f, -2, 7.5f),
+                new Vector3f(1f, -2, 17.5f),
                 new Vector3f(0, 0, 0),
                 new Vector3f(2f, 0.5f, 1f));
         Instance cube3 = new Instance(model,
