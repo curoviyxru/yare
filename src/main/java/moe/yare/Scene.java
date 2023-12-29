@@ -23,6 +23,7 @@ public class Scene {
     boolean isLightSpecular = true;
     ShadingType shadingModel = ShadingType.PHONG;
     boolean useVertexNormals = true;
+    boolean usePerspectiveCorrectDepth = true;
 
     private Camera camera = new Camera(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
 
@@ -172,6 +173,8 @@ public class Scene {
         return new float[][] { v02, v012 };
     }
 
+    //TODO: remove redundant float[] (these that are before left/right condition)
+    //TODO: extract (int) y - (int) y0 to variable
     public void renderTriangle(Graphics g, Triangle triangle, Vector3f[] vertices, Vector2f[] projected, Matrix4f orientation) {
         Vector3i triangleIndexes = triangle.getIndexes();
         int[] indexes = sortVertexIndexes(triangleIndexes, projected);
@@ -200,6 +203,34 @@ public class Scene {
 
         float[] x02 = ei1[0], x012 = ei1[1];
         float[] iz02 = ei2[0], iz012 = ei2[1];
+
+        float[] uz02 = null, uz012 = null, vz02 = null, vz012 = null;
+        if (triangle.getTexture() != null) {
+            Vector2f[] uvs = triangle.getUVs();
+            if (usePerspectiveCorrectDepth) {
+                float[][] uz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getX() / v0.getZ(),
+                                                p1.getY(), uvs[indexes[1]].getX() / v1.getZ(),
+                                                p2.getY(), uvs[indexes[2]].getX() / v2.getZ());
+                uz02 = uz[0];
+                uz012 = uz[1];
+                float[][] vz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getY() / v0.getZ(),
+                                                p1.getY(), uvs[indexes[1]].getY() / v1.getZ(),
+                                                p2.getY(), uvs[indexes[2]].getY() / v2.getZ());
+                vz02 = vz[0];
+                vz012 = vz[1];
+            } else {
+                float[][] uz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getX(),
+                                                p1.getY(), uvs[indexes[1]].getX(),
+                                                p2.getY(), uvs[indexes[2]].getX());
+                uz02 = uz[0];
+                uz012 = uz[1];
+                float[][] vz = edgeInterpolate(p0.getY(), uvs[indexes[0]].getY(),
+                                                p1.getY(), uvs[indexes[1]].getY(),
+                                                p2.getY(), uvs[indexes[2]].getY());
+                vz02 = vz[0];
+                vz012 = vz[1];
+            }
+        }
 
         Vector4f normal0, normal1, normal2;
         if (useVertexNormals) {
@@ -248,6 +279,8 @@ public class Scene {
         float[] nx_left, nx_right;
         float[] ny_left, ny_right;
         float[] nz_left, nz_right;
+        float[] uz_left, uz_right;
+        float[] vz_left, vz_right;
         if (x02[m] < x012[m]) {
             x_left = x02;
             x_right = x012;
@@ -266,6 +299,12 @@ public class Scene {
 
             nz_left = nz02;
             nz_right = nz012;
+
+            uz_left = uz02;
+            uz_right = uz012;
+
+            vz_left = vz02;
+            vz_right = vz012;
         } else {
             x_left = x012;
             x_right = x02;
@@ -284,6 +323,12 @@ public class Scene {
 
             nz_left = nz012;
             nz_right = nz02;
+
+            uz_left = uz012;
+            uz_right = uz02;
+
+            vz_left = vz012;
+            vz_right = vz02;
         }
 
         float y0 = p0.getY();
@@ -314,6 +359,16 @@ public class Scene {
                 }
             }
 
+            float[] uzs = null, vzs = null;
+            if (triangle.getTexture() != null) {
+                assert uz_left != null;
+                assert uz_right != null;
+                uzs = interpolate(xl, uz_left[(int) y - (int) y0], xr, uz_right[(int) y - (int) y0]);
+                assert vz_left != null;
+                assert vz_right != null;
+                vzs = interpolate(xl, vz_left[(int) y - (int) y0], xr, vz_right[(int) y - (int) y0]);
+            }
+
             for (float x = xl; x <= xr; ++x) {
                 if (!depthBufferingEnabled || updateDepthBufferIfCloser(x, y, zs[(int) x - (int) xl])) {
                     switch (shadingModel) {
@@ -331,7 +386,26 @@ public class Scene {
                         }
                     }
 
-                    setColor(g, new Color(triangle.getColor()).mul(intensity));
+                    Color color;
+                    if (triangle.getTexture() != null) {
+                        float u, v;
+
+                        assert uzs != null;
+                        assert vzs != null;
+                        if (usePerspectiveCorrectDepth) {
+                            u = uzs[(int) x - (int) xl] / zs[(int) x - (int) xl];
+                            v = vzs[(int) x - (int) xl] / zs[(int) x - (int) xl];
+                        } else {
+                            u = uzs[(int) x - (int) xl];
+                            v = vzs[(int) x - (int) xl];
+                        }
+
+                        color = triangle.getTexture().getTexel(u, v);
+                    } else {
+                        color = new Color(triangle.getColor());
+                    }
+
+                    setColor(g, color.mul(intensity));
                     putPixel(g, x, y);
                 }
             }
