@@ -22,6 +22,7 @@ public class Primitives {
             values.add(d);
             d += a;
         }
+        values.add(d); //Just a hack to avoid floating-point precision issues.
 
         Iterator<Float> it = values.iterator();
         int i = 0;

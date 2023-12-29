@@ -18,7 +18,7 @@ public class Triangle {
         return indexes;
     }
 
-    public Vector3i getColor() {
+    public Color getColor() {
         return color;
     }
 

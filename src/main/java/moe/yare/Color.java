@@ -6,6 +6,10 @@ public class Color extends Vector3i {
         super(r, g, b);
     }
 
+    public Color(Color color) {
+        super(color);
+    }
+
     private static int clamp(float i) {
         if (i < 0) return 0;
         if (i > 255) return 255;
