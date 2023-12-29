@@ -12,7 +12,8 @@ public class Scene {
 
     //TODO: unit tests
     //TODO: custom Math methods
-    //TODO: separate code
+    //TODO: separate code in classes
+    //TODO: javadoc
 
     public enum ShadingType {
         FLAT, GOURAUD, PHONG
@@ -37,6 +38,18 @@ public class Scene {
     private Float[] depthBuffer;
     private final Texture renderTexture = new Texture(0, 0, null);
 
+    //TODO: camera movement
+    //TODO: merge lights/instances/camera into one list
+    private final Camera camera = new Camera(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
+
+    private final Light[] lights = new Light[] {
+            new Light(Light.Type.AMBIENT, 0.2f, new Vector3f(0, 0, 0)),
+            new Light(Light.Type.DIRECTIONAL, 0.2f, new Vector3f(-1, 0, 1)),
+            new Light(Light.Type.POINT, 0.6f, new Vector3f(-3, 2, -10))
+    };
+
+    private final LinkedList<Instance> instances = new LinkedList<>();
+
     public Scene(int width, int height) {
         setSize(width, height);
     }
@@ -52,27 +65,22 @@ public class Scene {
         }
     }
 
-    //TODO: camera movement
-    private final Camera camera = new Camera(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
-
-    private final Light[] lights = new Light[] {
-            new Light(Light.Type.AMBIENT, 0.2f, new Vector3f(0, 0, 0)),
-            new Light(Light.Type.DIRECTIONAL, 0.2f, new Vector3f(-1, 0, 1)),
-            new Light(Light.Type.POINT, 0.6f, new Vector3f(-3, 2, -10))
-    };
-
-    private final LinkedList<Instance> instances = new LinkedList<>();
-
     public void clearRect() {
-        renderTexture.fill(backgroundColor);
+        synchronized (renderTexture) {
+            renderTexture.fill(backgroundColor);
+        }
     }
 
     public void clearInstances() {
-        instances.clear();
+        synchronized (renderTexture) {
+            instances.clear();
+        }
     }
 
     public void addInstance(Instance instance) {
-        instances.add(instance);
+        synchronized (renderTexture) {
+            instances.add(instance);
+        }
     }
 
     public void renderScene() {

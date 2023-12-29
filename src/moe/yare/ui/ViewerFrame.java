@@ -2,6 +2,7 @@ package moe.yare.ui;
 
 import moe.yare.io.ObjReader;
 import moe.yare.io.TextureReader;
+import moe.yare.math.Vector2i;
 import moe.yare.math.Vector3f;
 import moe.yare.render.BasicModels;
 import moe.yare.render.Color;
@@ -9,9 +10,11 @@ import moe.yare.render.Instance;
 import moe.yare.render.Scene;
 
 import javax.swing.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 
 public class ViewerFrame extends JFrame {
-
 
     private JPanel contentPanel;
     private JCheckBox backfaceCullingCheckBox;
@@ -30,7 +33,9 @@ public class ViewerFrame extends JFrame {
     private Canvas canvas;
     private JCheckBox enableXRotationCheckBox;
     private JCheckBox enableZRotationCheckBox;
+
     private Instance instance;
+    private Vector2i mousePoint;
 
     public ViewerFrame() {
         setContentPane(contentPanel);
@@ -70,6 +75,30 @@ public class ViewerFrame extends JFrame {
                 }
             }
         }).start();
+
+        canvas.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                mousePoint = null;
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                mousePoint = new Vector2i(e.getX(), e.getY());
+            }
+        });
+        canvas.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                synchronized (instance.getLock()) {
+                    instance.getRotation().add(mousePoint.getY() - e.getY(),
+                            mousePoint.getX() - e.getX(),
+                            0);
+                    instance.updateTransformMatrix();
+                    mousePoint.set(e.getX(), e.getY());
+                }
+            }
+        });
 
         showASphereButton.addActionListener(e -> setSphere());
         showACrateButton.addActionListener(e -> setCrate());

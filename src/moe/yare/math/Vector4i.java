@@ -1,7 +1,5 @@
 package moe.yare.math;
 
-import moe.yare.render.Color;
-
 public class Vector4i extends Vector3i {
 
     private int w;
