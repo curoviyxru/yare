@@ -1,4 +1,6 @@
-package moe.yare;
+package moe.yare.io;
+
+import moe.yare.render.Texture;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

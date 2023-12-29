@@ -1,4 +1,4 @@
-package moe.yare;
+package moe.yare.ui;
 
 import javax.swing.*;
 

@@ -1,4 +1,4 @@
-package moe.yare;
+package moe.yare.math;
 
 public class Vector3f {
 

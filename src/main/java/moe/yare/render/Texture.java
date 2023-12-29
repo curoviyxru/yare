@@ -1,4 +1,4 @@
-package moe.yare;
+package moe.yare.render;
 
 import static java.lang.Math.max;
 

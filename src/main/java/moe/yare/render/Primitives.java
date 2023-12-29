@@ -1,4 +1,7 @@
-package moe.yare;
+package moe.yare.render;
+
+import moe.yare.math.Vector2f;
+import moe.yare.math.Vector3f;
 
 import java.awt.*;
 import java.util.Iterator;

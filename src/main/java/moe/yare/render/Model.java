@@ -1,4 +1,7 @@
-package moe.yare;
+package moe.yare.render;
+
+import moe.yare.math.Vector3f;
+import moe.yare.math.Vector4f;
 
 import static java.lang.Math.*;
 

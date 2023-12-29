@@ -1,6 +1,9 @@
-package moe.yare;
+package moe.yare.render;
 
-import static moe.yare.Transform.*;
+import moe.yare.math.Matrix4f;
+import moe.yare.math.Vector3f;
+
+import static moe.yare.render.Transform.*;
 
 public class Instance {
 

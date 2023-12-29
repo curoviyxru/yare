@@ -1,10 +1,12 @@
-package moe.yare;
+package moe.yare.render;
+
+import moe.yare.math.*;
 
 import java.awt.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-import static moe.yare.Primitives.*;
+import static moe.yare.render.Primitives.*;
 
 public class Scene {
 

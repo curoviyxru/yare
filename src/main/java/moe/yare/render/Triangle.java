@@ -1,4 +1,8 @@
-package moe.yare;
+package moe.yare.render;
+
+import moe.yare.math.Vector2f;
+import moe.yare.math.Vector3f;
+import moe.yare.math.Vector3i;
 
 public class Triangle {
 

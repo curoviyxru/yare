@@ -1,4 +1,4 @@
-package moe.yare;
+package moe.yare.math;
 
 public class Vector4f extends Vector3f {
 

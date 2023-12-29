@@ -1,4 +1,6 @@
-package moe.yare;
+package moe.yare.render;
+
+import moe.yare.math.Vector3f;
 
 public class Light {
 

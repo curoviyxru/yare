@@ -1,4 +1,11 @@
-package moe.yare;
+package moe.yare.io;
+
+import moe.yare.render.Model;
+import moe.yare.render.Texture;
+import moe.yare.render.Triangle;
+import moe.yare.math.Vector2f;
+import moe.yare.math.Vector3f;
+import moe.yare.math.Vector3i;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

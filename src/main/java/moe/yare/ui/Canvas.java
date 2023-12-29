@@ -1,14 +1,22 @@
-package moe.yare;
+package moe.yare.ui;
+
+import moe.yare.io.ObjReader;
+import moe.yare.io.TextureReader;
+import moe.yare.math.Vector2f;
+import moe.yare.math.Vector3f;
+import moe.yare.math.Vector3i;
+import moe.yare.math.Vector4f;
+import moe.yare.render.*;
+import moe.yare.render.Color;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 
 import static java.lang.Math.*;
 
 public class Canvas extends JPanel {
 
-    public Model generateSphere(int divs, Color color) {
+    public Model generateSphere(int divs, moe.yare.render.Color color) {
         Vector3f[] vertices = new Vector3f[(divs + 1) * divs];
         Triangle[] triangles = new Triangle[2 * divs * divs];
 
@@ -42,12 +50,12 @@ public class Canvas extends JPanel {
 
     @Override
     public void paint(Graphics g) {
-        Color RED =       new Color(255, 0, 0);
-        Color GREEN =     new Color(0, 255, 0);
-        Color BLUE =      new Color(0, 0, 255);
-        Color YELLOW =    new Color(255, 255, 0);
-        Color PURPLE =    new Color(255, 0, 255);
-        Color CYAN =      new Color(0, 255, 255);
+        moe.yare.render.Color RED =       new moe.yare.render.Color(255, 0, 0);
+        moe.yare.render.Color GREEN =     new moe.yare.render.Color(0, 255, 0);
+        moe.yare.render.Color BLUE =      new moe.yare.render.Color(0, 0, 255);
+        moe.yare.render.Color YELLOW =    new moe.yare.render.Color(255, 255, 0);
+        moe.yare.render.Color PURPLE =    new moe.yare.render.Color(255, 0, 255);
+        moe.yare.render.Color CYAN =      new Color(0, 255, 255);
 
         Texture texture = null;
         try {
