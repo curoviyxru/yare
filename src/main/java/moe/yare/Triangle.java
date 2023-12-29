@@ -8,10 +8,12 @@ public class Triangle {
     private Texture texture;
     private Vector2f[] uvs;
 
-    public Triangle(Vector3i indexes, Color color, Vector3f[] normals) {
+    public Triangle(Vector3i indexes, Color color, Vector3f[] normals, Texture texture, Vector2f[] uvs) {
         this.indexes = indexes;
         this.color = color;
         this.normals = normals;
+        this.texture = texture;
+        this.uvs = uvs;
     }
 
     public Vector3i getIndexes() {
@@ -32,25 +34,5 @@ public class Triangle {
 
     public Vector2f[] getUVs() {
         return uvs;
-    }
-
-    public void setIndexes(Vector3i indexes) {
-        this.indexes = indexes;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
-    public void setNormals(Vector3f[] normals) {
-        this.normals = normals;
-    }
-
-    public void setTexture(Texture texture) {
-        this.texture = texture;
-    }
-
-    public void setUvs(Vector2f[] uvs) {
-        this.uvs = uvs;
     }
 }

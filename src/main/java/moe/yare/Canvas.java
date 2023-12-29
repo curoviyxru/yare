@@ -31,9 +31,9 @@ public class Canvas extends JPanel {
                 int i2 = divs * d + (i + 1) % divs;
 
                 triangles[ti++] = new Triangle(new Vector3i(i0, i1, i2),
-                        color, new Vector3f[] { vertices[i0], vertices[i1], vertices[i2] });
+                        color, new Vector3f[] { vertices[i0], vertices[i1], vertices[i2] }, null, null);
                 triangles[ti++] = new Triangle(new Vector3i(i0, i0 + divs, i1),
-                        color, new Vector3f[] { vertices[i0], vertices[i0 + divs], vertices[i1] });
+                        color, new Vector3f[] { vertices[i0], vertices[i0 + divs], vertices[i1] }, null, null);
             }
         }
 
@@ -49,6 +49,8 @@ public class Canvas extends JPanel {
         Color PURPLE =    new Color(255, 0, 255);
         Color CYAN =      new Color(0, 255, 255);
 
+        Texture texture = TextureReader.loadTexture("crate1_diffuse.png");
+
         Model model = new Model(new Vector3f[] {
                 new Vector3f(1, 1, 1),
                 new Vector3f(-1, 1, 1),
@@ -59,18 +61,18 @@ public class Canvas extends JPanel {
                 new Vector3f(-1, -1, -1),
                 new Vector3f(1, -1, -1),
         }, new Triangle[] {
-                new Triangle(new Vector3i(0, 1, 2), RED,    new Vector3f[] { new Vector3f( 0,  0,  1), new Vector3f( 0,  0,  1), new Vector3f( 0,  0,  1) }),
-                new Triangle(new Vector3i(0, 2, 3), RED,    new Vector3f[] { new Vector3f( 0,  0,  1), new Vector3f( 0,  0,  1), new Vector3f( 0,  0,  1) }),
-                new Triangle(new Vector3i(4, 0, 3), GREEN,  new Vector3f[] { new Vector3f( 1,  0,  0), new Vector3f( 1,  0,  0), new Vector3f( 1,  0,  0) }),
-                new Triangle(new Vector3i(4, 3, 7), GREEN,  new Vector3f[] { new Vector3f( 1,  0,  0), new Vector3f( 1,  0,  0), new Vector3f( 1,  0,  0) }),
-                new Triangle(new Vector3i(5, 4, 7), BLUE,   new Vector3f[] { new Vector3f( 0,  0, -1), new Vector3f( 0,  0, -1), new Vector3f( 0,  0, -1) }),
-                new Triangle(new Vector3i(5, 7, 6), BLUE,   new Vector3f[] { new Vector3f( 0,  0, -1), new Vector3f( 0,  0, -1), new Vector3f( 0,  0, -1) }),
-                new Triangle(new Vector3i(1, 5, 6), YELLOW, new Vector3f[] { new Vector3f(-1,  0,  0), new Vector3f(-1,  0,  0), new Vector3f(-1,  0,  0) }),
-                new Triangle(new Vector3i(1, 6, 2), YELLOW, new Vector3f[] { new Vector3f(-1,  0,  0), new Vector3f(-1,  0,  0), new Vector3f(-1,  0,  0) }),
-                new Triangle(new Vector3i(1, 0, 5), PURPLE, new Vector3f[] { new Vector3f( 0,  1,  0), new Vector3f( 0,  1,  0), new Vector3f( 0,  1,  0) }),
-                new Triangle(new Vector3i(5, 0, 4), PURPLE, new Vector3f[] { new Vector3f( 0,  1,  0), new Vector3f( 0,  1,  0), new Vector3f( 0,  1,  0) }),
-                new Triangle(new Vector3i(2, 6, 7), CYAN,   new Vector3f[] { new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0) }),
-                new Triangle(new Vector3i(2, 7, 3), CYAN,   new Vector3f[] { new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0) }),
+                new Triangle(new Vector3i(0, 1, 2), RED,    new Vector3f[] { new Vector3f( 0,  0,  1), new Vector3f( 0,  0,  1), new Vector3f( 0,  0,  1) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 0), new Vector2f(1, 1) }),
+                new Triangle(new Vector3i(0, 2, 3), RED,    new Vector3f[] { new Vector3f( 0,  0,  1), new Vector3f( 0,  0,  1), new Vector3f( 0,  0,  1) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 1), new Vector2f(0, 1) }),
+                new Triangle(new Vector3i(4, 0, 3), GREEN,  new Vector3f[] { new Vector3f( 1,  0,  0), new Vector3f( 1,  0,  0), new Vector3f( 1,  0,  0) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 0), new Vector2f(1, 1) }),
+                new Triangle(new Vector3i(4, 3, 7), GREEN,  new Vector3f[] { new Vector3f( 1,  0,  0), new Vector3f( 1,  0,  0), new Vector3f( 1,  0,  0) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 1), new Vector2f(0, 1) }),
+                new Triangle(new Vector3i(5, 4, 7), BLUE,   new Vector3f[] { new Vector3f( 0,  0, -1), new Vector3f( 0,  0, -1), new Vector3f( 0,  0, -1) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 0), new Vector2f(1, 1) }),
+                new Triangle(new Vector3i(5, 7, 6), BLUE,   new Vector3f[] { new Vector3f( 0,  0, -1), new Vector3f( 0,  0, -1), new Vector3f( 0,  0, -1) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 1), new Vector2f(0, 1) }),
+                new Triangle(new Vector3i(1, 5, 6), YELLOW, new Vector3f[] { new Vector3f(-1,  0,  0), new Vector3f(-1,  0,  0), new Vector3f(-1,  0,  0) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 0), new Vector2f(1, 1) }),
+                new Triangle(new Vector3i(1, 6, 2), YELLOW, new Vector3f[] { new Vector3f(-1,  0,  0), new Vector3f(-1,  0,  0), new Vector3f(-1,  0,  0) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 1), new Vector2f(0, 1) }),
+                new Triangle(new Vector3i(1, 0, 5), PURPLE, new Vector3f[] { new Vector3f( 0,  1,  0), new Vector3f( 0,  1,  0), new Vector3f( 0,  1,  0) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 0), new Vector2f(1, 1) }),
+                new Triangle(new Vector3i(5, 0, 4), PURPLE, new Vector3f[] { new Vector3f( 0,  1,  0), new Vector3f( 0,  1,  0), new Vector3f( 0,  1,  0) }, texture, new Vector2f[] { new Vector2f(0, 1), new Vector2f(1, 1), new Vector2f(0, 0) }),
+                new Triangle(new Vector3i(2, 6, 7), CYAN,   new Vector3f[] { new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 0), new Vector2f(1, 1) }),
+                new Triangle(new Vector3i(2, 7, 3), CYAN,   new Vector3f[] { new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0), new Vector3f( 0, -1,  0) }, texture, new Vector2f[] { new Vector2f(0, 0), new Vector2f(1, 1), new Vector2f(0, 1) }),
         });
         Model model1 = null;
         try {
@@ -93,16 +95,16 @@ public class Canvas extends JPanel {
                 new Vector3f(0, 0, -20f),
                 new Vector3f(0, 180, 0),
                 new Vector3f(1f, 1f, 1f));
-        Instance sphere = new Instance(generateSphere(15, GREEN),
-                new Vector3f(1.75f, -0.5f, 7f),
-                new Vector3f(0, 0, 0),
+        Instance cube4 = new Instance(model,
+                new Vector3f(1.75f, 0f, 5f),
+                new Vector3f(0, -30, 0),
                 new Vector3f(1.5f, 1.5f, 1.5f));
 
         Scene scene = new Scene();
         scene.addInstance(cube1);
         scene.addInstance(cube2);
         scene.addInstance(cube3);
-        scene.addInstance(sphere);
+        scene.addInstance(cube4);
 
         scene.renderScene(g);
     }
