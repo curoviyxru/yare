@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
 
 public class Scene {
 
@@ -541,15 +541,33 @@ public class Scene {
     }
 
     public void putPixel(Color c, float x, float y) {
-        int px = (Cw >> 1) + (int) (x);
-        int py = (Ch >> 1) - (int) (y) - 1;
+        int px, py, offset;
 
-        if (px < 0 || px >= Cw || py < 0 || py >= Ch) {
-            return;
-        }
+        px = (Cw >> 1) + (int) (x);
+        py = (Ch >> 1) - (int) (y) - 1;
+        offset = (py * Cw) + px;
+        if (offset >= 0 && offset < renderTexture.getRGB().length)
+            renderTexture.getRGB()[offset] = c.rgb();
 
-        int offset = (py * Cw) + px;
-        renderTexture.getRGB()[offset] = c.rgb();
+        //TODO: is there other way to do it?
+
+        px = (Cw >> 1) + round(x);
+        py = (Ch >> 1) - round(y) - 1;
+        offset = (py * Cw) + px;
+        if (offset >= 0 && offset < renderTexture.getRGB().length)
+            renderTexture.getRGB()[offset] = c.rgb();
+
+        px = (Cw >> 1) + (int) ceil(x);
+        py = (Ch >> 1) - (int) ceil(y) - 1;
+        offset = (py * Cw) + px;
+        if (offset >= 0 && offset < renderTexture.getRGB().length)
+            renderTexture.getRGB()[offset] = c.rgb();
+
+        px = (Cw >> 1) + (int) floor(x);
+        py = (Ch >> 1) - (int) floor(y) - 1;
+        offset = (py * Cw) + px;
+        if (offset >= 0 && offset < renderTexture.getRGB().length)
+            renderTexture.getRGB()[offset] = c.rgb();
     }
 
     public Vector2f viewportToCanvas(float x, float y) {
