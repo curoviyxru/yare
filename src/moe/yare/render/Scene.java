@@ -11,13 +11,15 @@ import static java.lang.Math.abs;
 public class Scene {
 
     //TODO: unit tests
+    //TODO: custom Math methods
+    //TODO: separate code
 
     public enum ShadingType {
         FLAT, GOURAUD, PHONG
     }
     private static final float[][] FAA_STUB = new float[][] { null, null };
 
-    private Color edgeColor = new Color(0, 0, 0);
+    private Color edgeColor = new Color(255, 0, 255);
     private Color materialColor = new Color(255, 255, 255);
     private Color backgroundColor = new Color(255, 255, 255);
     private boolean depthBufferingEnabled = true;
@@ -469,14 +471,14 @@ public class Scene {
     }
 
     private boolean updateDepthBufferIfCloser(float x, float y, float z) {
-        x = (Cw >> 1) + (int) x;
-        y = (Ch >> 1) - (int) y - 1;
+        int px = (Cw >> 1) + (int) (x);
+        int py = (Ch >> 1) - (int) (y) - 1;
 
-        if (x < 0 || x >= Cw || y < 0 || y >= Ch) {
+        if (px < 0 || px >= Cw || py < 0 || py >= Ch) {
             return false;
         }
 
-        int offset = (int) x + Cw * (int) y;
+        int offset = (py * Cw) + px;
         if (depthBuffer[offset] == null || depthBuffer[offset] < z) {
             depthBuffer[offset] = z;
             return true;
@@ -539,14 +541,15 @@ public class Scene {
     }
 
     public void putPixel(Color c, float x, float y) {
-        x = (Cw >> 1) + (int) x;
-        y = (Ch >> 1) - (int) y - 1;
+        int px = (Cw >> 1) + (int) (x);
+        int py = (Ch >> 1) - (int) (y) - 1;
 
-        if (x < 0 || x >= Cw || y < 0 || y >= Ch) {
+        if (px < 0 || px >= Cw || py < 0 || py >= Ch) {
             return;
         }
 
-        renderTexture.getRGB()[((int) y * Cw) + (int) x] = c.rgb();
+        int offset = (py * Cw) + px;
+        renderTexture.getRGB()[offset] = c.rgb();
     }
 
     public Vector2f viewportToCanvas(float x, float y) {

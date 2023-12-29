@@ -28,12 +28,15 @@ public class ViewerFrame extends JFrame {
     private JButton showACrateButton;
     private JButton showASphereButton;
     private Canvas canvas;
+    private JCheckBox enableXRotationCheckBox;
+    private JCheckBox enableZRotationCheckBox;
     private Instance instance;
 
     public ViewerFrame() {
         setContentPane(contentPanel);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(800, 600);
+        setTitle("YARE");
 
         setCrate();
 
@@ -50,8 +53,15 @@ public class ViewerFrame extends JFrame {
 
         new Thread(() -> {
             while (true) {
-                if (enableYRotationCheckBox.isSelected()) {
-                    instance.setRotation(new Vector3f(0, instance.getRotation().getY() + 1f, 0));
+                if (enableXRotationCheckBox.isSelected()
+                        || enableYRotationCheckBox.isSelected()
+                        || enableZRotationCheckBox.isSelected()) {
+                    synchronized (instance.getLock()) {
+                        instance.getRotation().add(enableXRotationCheckBox.isSelected() ? 1 : 0,
+                                enableYRotationCheckBox.isSelected() ? 1 : 0,
+                                enableZRotationCheckBox.isSelected() ? 1 : 0);
+                        instance.updateTransformMatrix();
+                    }
                 }
                 try {
                     Thread.sleep(10);

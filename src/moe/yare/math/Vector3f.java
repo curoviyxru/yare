@@ -58,6 +58,14 @@ public class Vector3f {
         return this;
     }
 
+    public Vector3f add(float x, float y, float z) {
+        this.x += x;
+        this.y += y;
+        this.z += z;
+
+        return this;
+    }
+
     public Vector3f sub(Vector3f v) {
         x -= v.x;
         y -= v.y;

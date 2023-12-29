@@ -24,10 +24,10 @@ public class Instance {
         this.rotation = rotation;
         this.scaling = scaling;
 
-        makeTransformMatrix();
+        updateTransformMatrix();
     }
 
-    private void makeTransformMatrix() {
+    public void updateTransformMatrix() {
         this.transformMatrix = makeTranslationMatrix(translation)
                 .mul(orientationMatrix = makeRotationMatrix(rotation))
                 .mul(makeScalingMatrix(scaling));
@@ -66,21 +66,21 @@ public class Instance {
     public void setTranslation(Vector3f translation) {
         synchronized (lock) {
             this.translation = translation;
-            makeTransformMatrix();
+            updateTransformMatrix();
         }
     }
 
     public void setScaling(Vector3f scaling) {
         synchronized (lock) {
             this.scaling = scaling;
-            makeTransformMatrix();
+            updateTransformMatrix();
         }
     }
 
     public void setRotation(Vector3f rotation) {
         synchronized (lock) {
             this.rotation = rotation;
-            makeTransformMatrix();
+            updateTransformMatrix();
         }
     }
 
