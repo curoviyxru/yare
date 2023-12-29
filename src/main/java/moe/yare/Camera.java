@@ -17,13 +17,13 @@ public class Camera {
     private Vector3f translation;
     private Vector3f rotation;
     private Matrix4f cameraMatrix;
+    private Matrix4f transposedRotationMatrix;
 
     public Camera(Vector3f translation, Vector3f rotation) {
         this.translation = translation;
         this.rotation = rotation;
 
-        this.cameraMatrix = makeRotationMatrix(rotation)
-                .transposed()
+        this.cameraMatrix = (transposedRotationMatrix = makeRotationMatrix(rotation).transposed())
                 .mul(makeTranslationMatrix(new Vector3f(translation).mul(-1)));
     }
 
@@ -41,5 +41,9 @@ public class Camera {
 
     public Plane[] getClippingPlanes() {
         return clippingPlanes;
+    }
+
+    public Matrix4f getTransposedRotationMatrix() {
+        return transposedRotationMatrix;
     }
 }

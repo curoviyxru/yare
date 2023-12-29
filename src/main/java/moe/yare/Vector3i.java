@@ -10,6 +10,18 @@ public class Vector3i {
         set(x, y, z);
     }
 
+    public Vector3i(Vector3i v) {
+        set(v);
+    }
+
+    private Vector3i set(Vector3i v) {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+
+        return this;
+    }
+
     public int getX() {
         return x;
     }

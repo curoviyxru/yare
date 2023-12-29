@@ -10,6 +10,7 @@ public class Instance {
     private Vector3f rotation;
     private Vector3f scaling;
     private Matrix4f transformMatrix;
+    private Matrix4f orientationMatrix;
 
     public Instance(Model model, Vector3f translation, Vector3f rotation, Vector3f scaling) {
         this.model = model;
@@ -19,7 +20,7 @@ public class Instance {
         this.scaling = scaling;
 
         this.transformMatrix = makeTranslationMatrix(translation)
-                .mul(makeRotationMatrix(rotation))
+                .mul(orientationMatrix = makeRotationMatrix(rotation))
                 .mul(makeScalingMatrix(scaling));
     }
 
@@ -41,5 +42,9 @@ public class Instance {
 
     public Matrix4f getTransformMatrix() {
         return transformMatrix;
+    }
+
+    public Matrix4f getOrientationMatrix() {
+        return orientationMatrix;
     }
 }
