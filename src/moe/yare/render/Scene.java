@@ -14,10 +14,16 @@ public class Scene {
     //TODO: custom Math methods
     //TODO: separate code in classes
     //TODO: javadoc
+    //TODO: antialiasing
 
     public enum ShadingType {
         FLAT, GOURAUD, PHONG
     }
+
+    public enum TextureMode {
+        TEXTURE_COLOR, TRIANGLE_COLOR, ONE_COLOR
+    }
+
     private static final float[][] FAA_STUB = new float[][] { null, null };
 
     private Color edgeColor = new Color(255, 0, 255);
@@ -36,6 +42,7 @@ public class Scene {
     private float Vw = 1; //viewport width
     private float Vh = 1; //viewport height
     private Float[] depthBuffer;
+    private TextureMode textureMode = TextureMode.TEXTURE_COLOR;
     private final Texture renderTexture = new Texture(0, 0, null);
 
     //TODO: camera movement
@@ -403,23 +410,32 @@ public class Scene {
                     }
 
                     Color color;
-                    if (triangle.getTexture() != null) {
-                        float u, v;
+                    switch (textureMode) {
+                        case TEXTURE_COLOR:
+                            if (triangle.getTexture() != null) {
+                                float u, v;
 
-                        assert uzs != null;
-                        assert vzs != null;
-                        if (usePerspectiveCorrectDepth) {
-                            u = uzs[xxl] / zs[xxl];
-                            v = vzs[xxl] / zs[xxl];
-                        } else {
-                            u = uzs[xxl];
-                            v = vzs[xxl];
-                        }
+                                assert uzs != null;
+                                assert vzs != null;
+                                if (usePerspectiveCorrectDepth) {
+                                    u = uzs[xxl] / zs[xxl];
+                                    v = vzs[xxl] / zs[xxl];
+                                } else {
+                                    u = uzs[xxl];
+                                    v = vzs[xxl];
+                                }
 
-                        color = triangle.getTexture().getTexel(u, v);
-                    } else if (triangle.getColor() != null) {
-                        color = new Color(triangle.getColor());
-                    } else color = new Color(materialColor);
+                                color = triangle.getTexture().getTexel(u, v);
+                                break;
+                            }
+                        case TRIANGLE_COLOR:
+                            if (triangle.getColor() != null) {
+                                color = new Color(triangle.getColor());
+                                break;
+                            }
+                        default:
+                            color = new Color(materialColor);
+                    }
 
                     putPixel(color.mul(intensity), x, y);
                 }
@@ -694,5 +710,13 @@ public class Scene {
         synchronized (renderTexture) {
             return renderTexture;
         }
+    }
+
+    public TextureMode getTextureMode() {
+        return textureMode;
+    }
+
+    public void setTextureMode(TextureMode textureMode) {
+        this.textureMode = textureMode;
     }
 }

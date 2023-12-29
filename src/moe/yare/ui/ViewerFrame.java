@@ -33,6 +33,9 @@ public class ViewerFrame extends JFrame {
     private Canvas canvas;
     private JCheckBox enableXRotationCheckBox;
     private JCheckBox enableZRotationCheckBox;
+    private JRadioButton textureColorRadioButton;
+    private JRadioButton triangleColorRadioButton;
+    private JRadioButton oneColorRadioButton;
 
     private Instance instance;
     private Vector2i mousePoint;
@@ -108,6 +111,10 @@ public class ViewerFrame extends JFrame {
         gouraudRadioButton.addActionListener(e -> canvas.getScene().setShadingModel(Scene.ShadingType.GOURAUD));
         phongRadioButton.addActionListener(e -> canvas.getScene().setShadingModel(Scene.ShadingType.PHONG));
 
+        textureColorRadioButton.addActionListener(e -> canvas.getScene().setTextureMode(Scene.TextureMode.TEXTURE_COLOR));
+        triangleColorRadioButton.addActionListener(e -> canvas.getScene().setTextureMode(Scene.TextureMode.TRIANGLE_COLOR));
+        oneColorRadioButton.addActionListener(e -> canvas.getScene().setTextureMode(Scene.TextureMode.ONE_COLOR));
+
         useVertexNormalsCheckBox.addActionListener(e -> canvas.getScene().setUseVertexNormals(useVertexNormalsCheckBox.isSelected()));
         usePerspectiveCorrectDepthCheckBox.addActionListener(e -> canvas.getScene().setUsePerspectiveCorrectDepth(usePerspectiveCorrectDepthCheckBox.isSelected()));
         doLightDiffuseCheckBox.addActionListener(e -> canvas.getScene().setLightDiffuse(doLightDiffuseCheckBox.isSelected()));
@@ -121,7 +128,7 @@ public class ViewerFrame extends JFrame {
 
     private void setCrate() {
         canvas.getScene().clearInstances();
-        canvas.getScene().addInstance(instance = new Instance(BasicModels.getCube(null, TextureReader.loadTexture("crate1_diffuse.png")),
+        canvas.getScene().addInstance(instance = new Instance(BasicModels.getCube(TextureReader.loadTexture("crate1_diffuse.png")),
                 new Vector3f(0, 0, 7),
                 new Vector3f(0, 0, 0),
                 new Vector3f(1, 1, 1)));
@@ -129,7 +136,8 @@ public class ViewerFrame extends JFrame {
 
     private void setSphere() {
         canvas.getScene().clearInstances();
-        canvas.getScene().addInstance(instance = new Instance(BasicModels.getSphere(30, new Color(0, 255, 0)),
+        canvas.getScene().addInstance(instance = new Instance(
+                BasicModels.getSphere(30),
                 new Vector3f(0, 0, 7),
                 new Vector3f(0, 0, 0),
                 new Vector3f(2, 2, 2)));
@@ -143,7 +151,8 @@ public class ViewerFrame extends JFrame {
         }
 
         canvas.getScene().clearInstances();
-        canvas.getScene().addInstance(instance = new Instance(ObjReader.readModel(chooser.getSelectedFile().getAbsolutePath()),
+        canvas.getScene().addInstance(instance = new Instance(
+                ObjReader.readModel(chooser.getSelectedFile().getAbsolutePath()),
                 new Vector3f(0, 0, 7),
                 new Vector3f(0, 0, 0),
                 new Vector3f(1, 1, 1)));
