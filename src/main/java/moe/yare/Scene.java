@@ -13,6 +13,7 @@ public class Scene {
     }
 
     private Color EDGE_COLOR = new Color(0, 0, 0);
+    private Color STANDARD_COLOR = new Color(255, 255, 255);
 
     //TODO: camera movement
 
@@ -53,6 +54,10 @@ public class Scene {
     }
 
     private Model transformAndClip(Model model, Matrix4f transform, float scale) {
+        if (model == null) {
+            return null;
+        }
+
         Vector4f center = camera.getCameraMatrix().mul(transform).mul(model.getBoundsCenter());
         float radius = model.getBoundsRadius() * scale;
 
@@ -121,7 +126,6 @@ public class Scene {
         }
 
         for (Triangle triangle : model.getTriangles()) {
-            setColor(g, triangle.getColor());
             renderTriangle(g, triangle, vertices, projected, orientation);
         }
     }
@@ -401,9 +405,9 @@ public class Scene {
                         }
 
                         color = triangle.getTexture().getTexel(u, v);
-                    } else {
+                    } else if (triangle.getColor() != null) {
                         color = new Color(triangle.getColor());
-                    }
+                    } else color = new Color(STANDARD_COLOR);
 
                     setColor(g, color.mul(intensity));
                     putPixel(g, x, y);

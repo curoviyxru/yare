@@ -49,7 +49,12 @@ public class Canvas extends JPanel {
         Color PURPLE =    new Color(255, 0, 255);
         Color CYAN =      new Color(0, 255, 255);
 
-        Texture texture = TextureReader.loadTexture("crate1_diffuse.png");
+        Texture texture = null;
+        try {
+            texture = TextureReader.loadTexture("crate1_diffuse.png");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Model model = new Model(new Vector3f[] {
                 new Vector3f(1, 1, 1),
@@ -76,11 +81,10 @@ public class Canvas extends JPanel {
         });
         Model model1 = null;
         try {
-            model = ObjParser.getModelFromFile("mankismooth.obj");
-            model1 = ObjParser.getModelFromFile("manki.obj");
+            model1 = ObjReader.readModel("manki.obj");
         }
-        catch (IOException e) {
-
+        catch (Exception e) {
+            e.printStackTrace();
         }
 
         Instance cube1 = new Instance(model,
@@ -98,7 +102,7 @@ public class Canvas extends JPanel {
         Instance cube4 = new Instance(model,
                 new Vector3f(1.75f, 0f, 5f),
                 new Vector3f(0, -30, 0),
-                new Vector3f(1.5f, 1.5f, 1.5f));
+                new Vector3f(0.5f, 0.5f, 0.5f));
 
         Scene scene = new Scene();
         scene.addInstance(cube1);
