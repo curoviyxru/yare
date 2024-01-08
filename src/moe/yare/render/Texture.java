@@ -29,8 +29,8 @@ public class Texture {
     }
 
     public Color getTexel(float u, float v) {
-        u = 1.0f - u;
-        v = 1.0f - v;
+        u = Math.min(1.0f - u, 1);
+        v = Math.min(1.0f - v, 1);
 
         int y = (int) max(v * height - 1, 0);
         int x = (int) max(u * width - 1, 0);

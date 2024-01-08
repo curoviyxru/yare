@@ -15,6 +15,8 @@ public class Scene {
     //TODO: javadoc
     //TODO: antialiasing
     //TODO: fix too early clipping
+    //TODO: fix render model from backwards
+    //TODO: fix yaw inverted because of pitch
 
     public enum ShadingType {
         FLAT, GOURAUD, PHONG
@@ -47,7 +49,6 @@ public class Scene {
 
     private static final ScheduledExecutorService THREAD_POOL = Executors.newScheduledThreadPool(12);
 
-    //TODO: camera movement
     //TODO: merge lights/instances/camera into one list
     private final Camera camera = new Camera(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
 

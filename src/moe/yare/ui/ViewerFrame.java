@@ -20,7 +20,7 @@ public class ViewerFrame extends JFrame {
     private SceneList sceneList;
     private InstanceInfo instanceInfo;
 
-    private boolean locked = false;
+    private Vector3f movementVector = new Vector3f(0, 0, 0);
 
     public ViewerFrame() {
         setupUI();
@@ -40,6 +40,7 @@ public class ViewerFrame extends JFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 mousePoint = new Vector2i(e.getX(), e.getY());
+                canvas.requestFocusInWindow();
             }
         });
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
@@ -60,22 +61,87 @@ public class ViewerFrame extends JFrame {
                 }
             }
         });
-        addKeyListener(new KeyAdapter() {
+        canvas.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                System.out.println("Pressed: " + e.getKeyCode());
+                switch (e.getKeyCode()) {
+                    case 81:
+                        movementVector.setY(1);
+                        break;
+                    case 69:
+                        movementVector.setY(-1);
+                        break;
+                    case 87:
+                        movementVector.setZ(1);
+                        break;
+                    case 83:
+                        movementVector.setZ(-1);
+                        break;
+                    case 68:
+                        movementVector.setX(1);
+                        break;
+                    case 65:
+                        movementVector.setX(-1);
+                        break;
+                }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                System.out.println("Released: " + e.getKeyCode());
+                switch (e.getKeyCode()) {
+                    case 81:
+                        if (movementVector.getY() == 1)
+                            movementVector.setY(0);
+                        break;
+                    case 69:
+                        if (movementVector.getY() == -1)
+                            movementVector.setY(0);
+                        break;
+                    case 87:
+                        if (movementVector.getZ() == 1)
+                            movementVector.setZ(0);
+                        break;
+                    case 83:
+                        if (movementVector.getZ() == -1)
+                            movementVector.setZ(0);
+                        break;
+                    case 68:
+                        if (movementVector.getX() == 1)
+                            movementVector.setX(0);
+                        break;
+                    case 65:
+                        if (movementVector.getX() == -1)
+                            movementVector.setX(0);
+                        break;
+                }
             }
         });
+        canvas.requestFocusInWindow();
 
         addCube();
         new Thread(() -> {
             while (true) {
                 canvas.repaint();
+            }
+        }).start();
+        new Thread(() -> {
+            float movementSpeed = 0.2f;
+            while (true) {
+                synchronized (canvas.getScene().getRenderTexture()) {
+                    Camera camera = canvas.getScene().getCurrentCamera();
+
+                    synchronized (camera.getLock()) {
+                        camera.getTranslation().add(camera.getRotationMatrix().mul(
+                                movementVector.getX() * movementSpeed,
+                                movementVector.getY() * movementSpeed,
+                                movementVector.getZ() * movementSpeed,
+                                1));
+                        camera.updateCameraMatrix();
+                    }
+                }
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ignored) {}
             }
         }).start();
     }
