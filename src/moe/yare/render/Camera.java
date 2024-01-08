@@ -23,10 +23,16 @@ public class Camera {
     private Matrix4f cameraMatrix;
     private Matrix4f transposedRotationMatrix;
 
+    private final Object lock = new Object();
+
     public Camera(Vector3f translation, Vector3f rotation) {
         this.translation = translation;
         this.rotation = rotation;
 
+        updateCameraMatrix();
+    }
+
+    public void updateCameraMatrix() {
         this.cameraMatrix = (transposedRotationMatrix = makeRotationMatrix(rotation).transposed())
                 .mul(makeTranslationMatrix(new Vector3f(translation).mul(-1)));
     }
@@ -49,5 +55,23 @@ public class Camera {
 
     public Matrix4f getTransposedRotationMatrix() {
         return transposedRotationMatrix;
+    }
+
+    public void setTranslation(Vector3f translation) {
+        synchronized (lock) {
+            this.translation = translation;
+            updateCameraMatrix();
+        }
+    }
+
+    public void setRotation(Vector3f rotation) {
+        synchronized (lock) {
+            this.rotation = rotation;
+            updateCameraMatrix();
+        }
+    }
+
+    public Object getLock() {
+        return lock;
     }
 }

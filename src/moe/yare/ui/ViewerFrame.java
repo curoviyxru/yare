@@ -4,25 +4,23 @@ import moe.yare.io.ObjReader;
 import moe.yare.io.TextureReader;
 import moe.yare.math.Vector2i;
 import moe.yare.math.Vector3f;
-import moe.yare.render.BasicModels;
-import moe.yare.render.Instance;
-import moe.yare.render.Scene;
-import moe.yare.render.Texture;
+import moe.yare.render.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 
 public class ViewerFrame extends JFrame {
 
     private JPanel contentPanel;
     private Canvas canvas;
 
-    private Instance instance;
     private Vector2i mousePoint;
+
+    private SceneList sceneList;
+    private InstanceInfo instanceInfo;
+
+    private boolean locked = false;
 
     public ViewerFrame() {
         setupUI();
@@ -47,17 +45,34 @@ public class ViewerFrame extends JFrame {
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                synchronized (instance.getLock()) {
-                    instance.getRotation().add(mousePoint.getY() - e.getY(),
-                            mousePoint.getX() - e.getX(),
-                            0);
-                    instance.updateTransformMatrix();
+                synchronized (canvas.getScene().getRenderTexture()) {
+                    int dy = e.getY() - mousePoint.getY();
+                    int dx = e.getX() - mousePoint.getX();
+                    float sens = 0.5f;
+                    Camera camera = canvas.getScene().getCurrentCamera();
+
+                    synchronized (camera.getLock()) {
+                        camera.getRotation().add(dy * sens, dx * sens, 0);
+                        camera.updateCameraMatrix();
+                    }
+
                     mousePoint.set(e.getX(), e.getY());
                 }
             }
         });
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                System.out.println("Pressed: " + e.getKeyCode());
+            }
 
-        setCube();
+            @Override
+            public void keyReleased(KeyEvent e) {
+                System.out.println("Released: " + e.getKeyCode());
+            }
+        });
+
+        addCube();
         new Thread(() -> {
             while (true) {
                 canvas.repaint();
@@ -70,12 +85,24 @@ public class ViewerFrame extends JFrame {
 
         //File menu
         JMenu fileMenu = new JMenu("File");
-        addItem(fileMenu, "Load a cube", a -> setCube());
-        addItem(fileMenu, "Load a sphere", a -> setSphere());
-        addItem(fileMenu, "Load a model", a -> setModel());
+        addItem(fileMenu, "Add a cube", a -> addCube());
+        addItem(fileMenu, "Add a sphere", a -> addSphere());
+        addItem(fileMenu, "Add a model", a -> addModel());
+        addItem(fileMenu, "Add empty instance", a -> addEmpty());
+        addItem(fileMenu, "Clear scene", a -> clearScene());
         fileMenu.addSeparator();
         addItem(fileMenu, "Exit", a -> System.exit(0));
         menuBar.add(fileMenu);
+
+        //View menu
+        JMenu viewMenu = new JMenu("View");
+        addCheckboxItem(viewMenu, "Show scene list", false, a -> {
+            sceneList.setVisible(a);
+        });
+        addCheckboxItem(viewMenu, "Show instance info", false, a -> {
+            instanceInfo.setVisible(a);
+        });
+        menuBar.add(viewMenu);
 
         //Rendering menu
         JMenu renderMenu = new JMenu("Rendering");
@@ -113,6 +140,18 @@ public class ViewerFrame extends JFrame {
         menuBar.add(shadingMenu);
 
         return menuBar;
+    }
+
+    private void addEmpty() {
+        sceneList.getModel().addInstance(new Instance("",
+                null,
+                new Vector3f(0, 0, 7),
+                new Vector3f(0, 0, 0),
+                new Vector3f(2, 2, 2)));
+    }
+
+    private void clearScene() {
+        sceneList.getModel().clearInstances();
     }
 
     public interface RadioListener {
@@ -155,7 +194,7 @@ public class ViewerFrame extends JFrame {
         menu.add(item);
     }
 
-    private void setCube() {
+    private void addCube() {
         Texture texture = null;
         try {
             texture = TextureReader.loadTexture("crate1_diffuse.png");
@@ -163,15 +202,14 @@ public class ViewerFrame extends JFrame {
             e.printStackTrace();
         }
 
-        canvas.getScene().clearInstances();
-        canvas.getScene().addInstance(instance = new Instance(
+        sceneList.getModel().addInstance(new Instance("Crate",
                 BasicModels.getCube(texture),
                 new Vector3f(0, 0, 7),
                 new Vector3f(0, 0, 0),
                 new Vector3f(1, 1, 1)));
     }
 
-    private void setSphere() {
+    private void addSphere() {
         Texture texture = null;
         try {
             texture = TextureReader.loadTexture("earth.png");
@@ -179,24 +217,31 @@ public class ViewerFrame extends JFrame {
             e.printStackTrace();
         }
 
-        canvas.getScene().clearInstances();
-        canvas.getScene().addInstance(instance = new Instance(
+        sceneList.getModel().addInstance(new Instance("Earth",
                 BasicModels.getSphere(texture, 30),
                 new Vector3f(0, 0, 7),
                 new Vector3f(0, 0, 0),
                 new Vector3f(2, 2, 2)));
     }
 
-    private void setModel() {
+    public static String requestFile() {
         JFileChooser chooser = new JFileChooser();
-        int result = chooser.showDialog(this, null);
+        int result = chooser.showDialog(null, null);
         if (result != JFileChooser.APPROVE_OPTION || chooser.getSelectedFile() == null) {
+            return null;
+        }
+
+        return chooser.getSelectedFile().getAbsolutePath();
+    }
+
+    private void addModel() {
+        String file = requestFile();
+        if (file == null) {
             return;
         }
 
-        canvas.getScene().clearInstances();
-        canvas.getScene().addInstance(instance = new Instance(
-                ObjReader.readModel(chooser.getSelectedFile().getAbsolutePath()),
+        sceneList.getModel().addInstance(new Instance("Loaded model",
+                ObjReader.readModel(file),
                 new Vector3f(0, 0, 7),
                 new Vector3f(0, 0, 0),
                 new Vector3f(1, 1, 1)));
@@ -212,15 +257,36 @@ public class ViewerFrame extends JFrame {
     }
 
     private void setupUI() {
-        canvas = new Canvas();
         contentPanel = new JPanel();
         contentPanel.setLayout(new GridBagLayout());
+
+        canvas = new Canvas();
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
+        gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         contentPanel.add(canvas, gbc);
+
+        instanceInfo = new InstanceInfo();
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.weightx = 0.25;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        contentPanel.add(instanceInfo, gbc);
+        instanceInfo.setVisible(false);
+
+        sceneList = new SceneList(instanceInfo, canvas.getScene());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0.25;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        contentPanel.add(sceneList, gbc);
+        sceneList.setVisible(false);
     }
 }

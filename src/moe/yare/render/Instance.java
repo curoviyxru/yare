@@ -9,6 +9,7 @@ public class Instance {
 
     private Model model;
 
+    private String name;
     private Vector3f translation;
     private Vector3f rotation;
     private Vector3f scaling;
@@ -17,7 +18,8 @@ public class Instance {
 
     private final Object lock = new Object();
 
-    public Instance(Model model, Vector3f translation, Vector3f rotation, Vector3f scaling) {
+    public Instance(String name, Model model, Vector3f translation, Vector3f rotation, Vector3f scaling) {
+        this.name = name == null ? "" : name;
         this.model = model;
 
         this.translation = translation;
@@ -31,6 +33,10 @@ public class Instance {
         this.transformMatrix = makeTranslationMatrix(translation)
                 .mul(orientationMatrix = makeRotationMatrix(rotation))
                 .mul(makeScalingMatrix(scaling));
+    }
+
+    public String getName() {
+        return name;
     }
 
     public Model getModel() {
@@ -55,6 +61,12 @@ public class Instance {
 
     public Matrix4f getOrientationMatrix() {
         return orientationMatrix;
+    }
+
+    public void setName(String name) {
+        synchronized (lock) {
+            this.name = name == null ? "" : name;
+        }
     }
 
     public void setModel(Model model) {
