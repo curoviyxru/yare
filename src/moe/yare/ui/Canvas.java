@@ -30,10 +30,10 @@ public class Canvas extends JPanel {
 
     @Override
     public void paint(Graphics g) {
+        //Render scene
         long before = System.currentTimeMillis();
         g.clearRect(0, 0, getWidth(), getHeight());
 
-        //Render scene
         scene.clearDepthBuffer();
         scene.clearRect();
         scene.renderScene();
@@ -46,13 +46,10 @@ public class Canvas extends JPanel {
                 scene.getRenderTexture().getWidth());
         g.drawImage(renderedImage, 0, 0, null);
 
-        //Debug info
         long frametime = System.currentTimeMillis() - before;
-        g.setColor(textColor);
-        g.drawString("Frametime: " + frametime, 0, 14);
-        g.drawString("FPS: " + (1000 / Math.max(frametime, 1)), 0, 28);
 
-        //FPS graph
+        //Debug info
+        g.setColor(textColor);
         lastRenderTime += frametime;
 
         if (lastRenderTime > GRAPH_PIXEL_MILLIS) {
@@ -87,6 +84,10 @@ public class Canvas extends JPanel {
             lX = x;
             lY = y;
         }
+
+        long avgFrametime = frametimeGraph[frametimeGraph.length - 1][0] / frametimeGraph[frametimeGraph.length - 1][1];
+        g.drawString("Frametime: " + avgFrametime, 0, 14);
+        g.drawString("FPS: " + (1000 / Math.max(avgFrametime, 1)), 0, 28);
     }
 
     public Scene getScene() {
