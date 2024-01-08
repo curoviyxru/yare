@@ -1,5 +1,6 @@
 package moe.yare.ui;
 
+import moe.yare.render.Camera;
 import moe.yare.render.Scene;
 
 import javax.swing.*;
@@ -67,7 +68,7 @@ public class Canvas extends JPanel {
         frametimeGraph[frametimeGraph.length - 1][0] += frametime;
         frametimeGraph[frametimeGraph.length - 1][1] += 1;
 
-        int graphY = 130;
+        int graphY = 160;
         int graphX = 0;
         int lX = graphX, lY = graphY;
         for (int i = 0; i < frametimeGraph.length; ++i) {
@@ -94,6 +95,18 @@ public class Canvas extends JPanel {
         long avgFrametime = frametimeGraph[frametimeGraph.length - 1][0] / frametimeGraph[frametimeGraph.length - 1][1];
         g.drawString("Frametime: " + avgFrametime, 0, 14);
         g.drawString("FPS: " + (1000 / Math.max(avgFrametime, 1)), 0, 28);
+
+        Camera camera = scene.getCurrentCamera();
+        StringBuilder coords = new StringBuilder();
+        coords.append("X: ").append(camera.getTranslation().getX())
+                .append(" Y: ").append(camera.getTranslation().getY())
+                .append(" Z: ").append(camera.getTranslation().getZ());
+        g.drawString(coords.toString(), 0, 42);
+        coords.setLength(0);
+        coords.append(" rX: ").append(camera.getRotation().getX())
+                .append(" rY: ").append(camera.getRotation().getY())
+                .append(" rZ: ").append(camera.getRotation().getZ());
+        g.drawString(coords.toString(), 0, 56);
     }
 
     public Scene getScene() {

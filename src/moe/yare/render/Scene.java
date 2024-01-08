@@ -179,13 +179,11 @@ public class Scene {
             case 1:
                 //Has one vertex - one clipped triangle.
                 //TODO: return [Triangle(A, Intersection(AB, plane), Intersection(AC, plane))]
-                newTriangles.add(triangle);
                 break;
             case 2:
                 //Has two vertices - two clipped triangles.
                 //TODO: return [Triangle(A, B, Intersection(AC, plane)),
                 //          Triangle(Intersection(AC, plane), B, Intersection(BC, plane))]
-                newTriangles.add(triangle);
                 break;
             case 3:
                 newTriangles.add(triangle);
