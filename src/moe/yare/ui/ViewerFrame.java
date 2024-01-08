@@ -10,6 +10,8 @@ import moe.yare.render.Scene;
 import moe.yare.render.Texture;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -17,67 +19,19 @@ import java.awt.event.MouseMotionAdapter;
 public class ViewerFrame extends JFrame {
 
     private JPanel contentPanel;
-    private JCheckBox backfaceCullingCheckBox;
-    private JCheckBox drawOutlinesCheckBox;
-    private JCheckBox doLightDiffuseCheckBox;
-    private JCheckBox doLightSpecularCheckBox;
-    private JRadioButton flatRadioButton;
-    private JRadioButton gouraudRadioButton;
-    private JRadioButton phongRadioButton;
-    private JCheckBox useVertexNormalsCheckBox;
-    private JCheckBox usePerspectiveCorrectDepthCheckBox;
-    private JButton loadAModelButton;
-    private JCheckBox enableYRotationCheckBox;
-    private JButton showACubeButton;
-    private JButton showASphereButton;
     private Canvas canvas;
-    private JCheckBox enableXRotationCheckBox;
-    private JCheckBox enableZRotationCheckBox;
-    private JRadioButton textureColorRadioButton;
-    private JRadioButton triangleColorRadioButton;
-    private JRadioButton oneColorRadioButton;
 
     private Instance instance;
     private Vector2i mousePoint;
 
     public ViewerFrame() {
+        setupUI();
+        setJMenuBar(createMenu());
+
         setContentPane(contentPanel);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(800, 600);
         setTitle("YARE");
-
-        setCube();
-
-        new Thread(() -> {
-            while (true) {
-                canvas.repaint();
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }).start();
-
-        new Thread(() -> {
-            while (true) {
-                if (enableXRotationCheckBox.isSelected()
-                        || enableYRotationCheckBox.isSelected()
-                        || enableZRotationCheckBox.isSelected()) {
-                    synchronized (instance.getLock()) {
-                        instance.getRotation().add(enableXRotationCheckBox.isSelected() ? 1 : 0,
-                                enableYRotationCheckBox.isSelected() ? 1 : 0,
-                                enableZRotationCheckBox.isSelected() ? 1 : 0);
-                        instance.updateTransformMatrix();
-                    }
-                }
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }).start();
 
         canvas.addMouseListener(new MouseAdapter() {
             @Override
@@ -103,27 +57,102 @@ public class ViewerFrame extends JFrame {
             }
         });
 
-        showASphereButton.addActionListener(e -> setSphere());
-        showACubeButton.addActionListener(e -> setCube());
-        loadAModelButton.addActionListener(e -> setModel());
+        setCube();
+        new Thread(() -> {
+            while (true) {
+                canvas.repaint();
+            }
+        }).start();
+    }
 
-        flatRadioButton.addActionListener(e -> canvas.getScene().setShadingModel(Scene.ShadingType.FLAT));
-        gouraudRadioButton.addActionListener(e -> canvas.getScene().setShadingModel(Scene.ShadingType.GOURAUD));
-        phongRadioButton.addActionListener(e -> canvas.getScene().setShadingModel(Scene.ShadingType.PHONG));
+    private JMenuBar createMenu() {
+        JMenuBar menuBar = new JMenuBar();
 
-        textureColorRadioButton.addActionListener(e -> canvas.getScene().setTextureMode(Scene.TextureMode.TEXTURE_COLOR));
-        triangleColorRadioButton.addActionListener(e -> canvas.getScene().setTextureMode(Scene.TextureMode.TRIANGLE_COLOR));
-        oneColorRadioButton.addActionListener(e -> canvas.getScene().setTextureMode(Scene.TextureMode.ONE_COLOR));
+        //File menu
+        JMenu fileMenu = new JMenu("File");
+        addItem(fileMenu, "Load a cube", a -> setCube());
+        addItem(fileMenu, "Load a sphere", a -> setSphere());
+        addItem(fileMenu, "Load a model", a -> setModel());
+        fileMenu.addSeparator();
+        addItem(fileMenu, "Exit", a -> System.exit(0));
+        menuBar.add(fileMenu);
 
-        useVertexNormalsCheckBox.addActionListener(e -> canvas.getScene().setUseVertexNormals(useVertexNormalsCheckBox.isSelected()));
-        usePerspectiveCorrectDepthCheckBox.addActionListener(e -> canvas.getScene().setUsePerspectiveCorrectDepth(usePerspectiveCorrectDepthCheckBox.isSelected()));
-        doLightDiffuseCheckBox.addActionListener(e -> canvas.getScene().setLightDiffuse(doLightDiffuseCheckBox.isSelected()));
-        doLightSpecularCheckBox.addActionListener(e -> canvas.getScene().setLightSpecular(doLightSpecularCheckBox.isSelected()));
-        drawOutlinesCheckBox.addActionListener(e -> canvas.getScene().setDrawOutlines(drawOutlinesCheckBox.isSelected()));
-        backfaceCullingCheckBox.addActionListener(e -> {
-            canvas.getScene().setBackfaceCullingEnabled(backfaceCullingCheckBox.isSelected());
-            canvas.getScene().setDepthBufferingEnabled(backfaceCullingCheckBox.isSelected());
+        //Rendering menu
+        JMenu renderMenu = new JMenu("Rendering");
+        addCheckboxItem(renderMenu, "Backface culling", true, a -> {
+            canvas.getScene().setBackfaceCullingEnabled(a);
+            canvas.getScene().setDepthBufferingEnabled(a);
         });
+        addCheckboxItem(renderMenu, "Draw outlines", false, a -> {
+            canvas.getScene().setDrawOutlines(a);
+        });
+        addCheckboxItem(renderMenu, "Do light diffuse", true, a -> {
+            canvas.getScene().setLightDiffuse(a);
+        });
+        addCheckboxItem(renderMenu, "Do light specular", true, a -> {
+            canvas.getScene().setLightSpecular(a);
+        });
+        addCheckboxItem(renderMenu, "Use vertex normals", true, a -> {
+            canvas.getScene().setUseVertexNormals(a);
+        });
+        addCheckboxItem(renderMenu, "Use perspective correct depth", true, a -> {
+            canvas.getScene().setUsePerspectiveCorrectDepth(a);
+        });
+        menuBar.add(renderMenu);
+
+        JMenu texturingMenu = new JMenu("Texturing");
+        addRadioItems(texturingMenu, 0, i -> {
+            canvas.getScene().setTextureMode(Scene.TextureMode.values()[i]);
+        }, "Texture color", "Triangle color", "One color");
+        menuBar.add(texturingMenu);
+
+        JMenu shadingMenu = new JMenu("Shading");
+        addRadioItems(shadingMenu, 2, i -> {
+            canvas.getScene().setShadingModel(Scene.ShadingType.values()[i]);
+        }, "Flat model", "Gouraud model", "Phong model");
+        menuBar.add(shadingMenu);
+
+        return menuBar;
+    }
+
+    public interface RadioListener {
+        void onAction(int i);
+    }
+
+    public interface ComboListener {
+        void onAction(boolean b);
+    }
+
+    private void addRadioItems(JMenu menu, int selectedIndex, RadioListener listener, String... names) {
+        ButtonGroup group = new ButtonGroup();
+
+        for (int i = 0; i < names.length; ++i) {
+            JMenuItem item = new JRadioButtonMenuItem(names[i]);
+            item.setSelected(i == selectedIndex);
+            if (listener != null) {
+                int finalI = i;
+                item.addActionListener(a -> listener.onAction(finalI));
+            }
+            group.add(item);
+            menu.add(item);
+        }
+    }
+
+    private void addItem(JMenu menu, String name, ActionListener listener) {
+        JMenuItem item = new JMenuItem(name);
+        if (listener != null) {
+            item.addActionListener(listener);
+        }
+        menu.add(item);
+    }
+
+    private void addCheckboxItem(JMenu menu, String name, boolean value, ComboListener listener) {
+        JMenuItem item = new JCheckBoxMenuItem(name);
+        item.setSelected(value);
+        if (listener != null) {
+            item.addActionListener(a -> listener.onAction(item.isSelected()));
+        }
+        menu.add(item);
     }
 
     private void setCube() {
@@ -173,10 +202,6 @@ public class ViewerFrame extends JFrame {
                 new Vector3f(1, 1, 1)));
     }
 
-    private void createUIComponents() {
-        canvas = new Canvas();
-    }
-
     public static void main(String[] args)
             throws UnsupportedLookAndFeelException,
             ClassNotFoundException,
@@ -184,5 +209,18 @@ public class ViewerFrame extends JFrame {
             IllegalAccessException {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         new ViewerFrame().setVisible(true);
+    }
+
+    private void setupUI() {
+        canvas = new Canvas();
+        contentPanel = new JPanel();
+        contentPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        contentPanel.add(canvas, gbc);
     }
 }
