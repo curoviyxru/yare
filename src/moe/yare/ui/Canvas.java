@@ -13,6 +13,10 @@ public class Canvas extends JPanel {
     private final Scene scene = new Scene(0, 0);
     private final Color textColor = new Color(0);
     private BufferedImage renderedImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+    private final long[][] frametimeGraph = new long[GRAPH_PIXEL_WIDTH][2];
+    private long lastRenderTime;
+    private static final long GRAPH_PIXEL_MILLIS = 200;
+    private static final int GRAPH_PIXEL_WIDTH = 100;
 
     public Canvas() {
         addComponentListener(new ComponentAdapter() {
@@ -26,9 +30,10 @@ public class Canvas extends JPanel {
 
     @Override
     public void paint(Graphics g) {
+        long before = System.currentTimeMillis();
         g.clearRect(0, 0, getWidth(), getHeight());
 
-        long before = System.currentTimeMillis();
+        //Render scene
         scene.clearDepthBuffer();
         scene.clearRect();
         scene.renderScene();
@@ -40,11 +45,48 @@ public class Canvas extends JPanel {
                 0,
                 scene.getRenderTexture().getWidth());
         g.drawImage(renderedImage, 0, 0, null);
-        long frametime = System.currentTimeMillis() - before;
 
+        //Debug info
+        long frametime = System.currentTimeMillis() - before;
         g.setColor(textColor);
         g.drawString("Frametime: " + frametime, 0, 14);
         g.drawString("FPS: " + (1000 / Math.max(frametime, 1)), 0, 28);
+
+        //FPS graph
+        lastRenderTime += frametime;
+
+        if (lastRenderTime > GRAPH_PIXEL_MILLIS) {
+            lastRenderTime %= GRAPH_PIXEL_MILLIS;
+
+            for (int i = 0; i < frametimeGraph.length - 1; ++i) {
+                frametimeGraph[i][0] = frametimeGraph[i + 1][0];
+                frametimeGraph[i][1] = frametimeGraph[i + 1][1];
+            }
+
+            frametimeGraph[frametimeGraph.length - 1][0] = 0;
+            frametimeGraph[frametimeGraph.length - 1][1] = 0;
+        }
+
+        frametimeGraph[frametimeGraph.length - 1][0] += frametime;
+        frametimeGraph[frametimeGraph.length - 1][1] += 1;
+
+        int graphY = 130;
+        int graphX = 0;
+        int lX = graphX, lY = graphY;
+        for (int i = 0; i < frametimeGraph.length; ++i) {
+            long[] ft = frametimeGraph[i];
+            if (ft[0] <= 0) {
+                lX = graphX + i;
+                continue;
+            }
+
+            int fps = (int) Math.min(1000 * ft[1] / ft[0], 100);
+            int x = graphX + i;
+            int y = graphY - fps;
+            g.drawLine(lX, lY, x, y);
+            lX = x;
+            lY = y;
+        }
     }
 
     public Scene getScene() {

@@ -49,17 +49,17 @@ public class BasicModels {
 
                 if (i == divs - 1) {
                     triangles[ti++] = new Triangle(new Vector3i(i0, i1, i2),
-                            colors[ti % colors.length], new Vector3f[] { vertices[i0], vertices[i1], vertices[i2] },
+                            colors[i % colors.length], new Vector3f[] { vertices[i0], vertices[i1], vertices[i2] },
                             texture, new Vector2f[] { uv[i0], new Vector2f(uv[i1]).setX(1), new Vector2f(uv[i2]).setX(1) });
                     triangles[ti++] = new Triangle(new Vector3i(i0, i0d, i1),
-                            colors[ti % colors.length], new Vector3f[] { vertices[i0], vertices[i0d], vertices[i1] },
+                            colors[i % colors.length], new Vector3f[] { vertices[i0], vertices[i0d], vertices[i1] },
                             texture, new Vector2f[] { uv[i0], uv[i0d], new Vector2f(uv[i1]).setX(1) });
                 } else {
                     triangles[ti++] = new Triangle(new Vector3i(i0, i1, i2),
-                            colors[ti % colors.length], new Vector3f[] { vertices[i0], vertices[i1], vertices[i2] },
+                            colors[i % colors.length], new Vector3f[] { vertices[i0], vertices[i1], vertices[i2] },
                             texture, new Vector2f[] { uv[i0], uv[i1], uv[i2] });
                     triangles[ti++] = new Triangle(new Vector3i(i0, i0d, i1),
-                            colors[ti % colors.length], new Vector3f[] { vertices[i0], vertices[i0d], vertices[i1] },
+                            colors[i % colors.length], new Vector3f[] { vertices[i0], vertices[i0d], vertices[i1] },
                             texture, new Vector2f[] { uv[i0], uv[i0d], uv[i1] });
                 }
             }
