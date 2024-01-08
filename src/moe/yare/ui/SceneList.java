@@ -18,7 +18,7 @@ public class SceneList extends JPanel {
         JTable table = new JTable(model);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getSelectionModel().addListSelectionListener(e ->
-                info.setInstance(scene.getInstances().get(table.getSelectedRow())));
+                info.setInstance(table.getSelectedRow() == -1 ? null : scene.getInstances().get(table.getSelectedRow())));
         JScrollPane scrollPane = new JScrollPane(table);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
