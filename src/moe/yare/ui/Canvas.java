@@ -80,6 +80,12 @@ public class Canvas extends JPanel {
             int fps = (int) Math.min(1000 * ft[1] / ft[0], 100);
             int x = graphX + i;
             int y = graphY - fps;
+
+            if (i == 0) {
+                lX = x;
+                lY = y;
+            }
+
             g.drawLine(lX, lY, x, y);
             lX = x;
             lY = y;
