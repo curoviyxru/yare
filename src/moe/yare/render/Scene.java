@@ -3,6 +3,7 @@ package moe.yare.render;
 import moe.yare.math.*;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 import static java.lang.Math.*;
 
@@ -42,6 +43,8 @@ public class Scene {
     private Float[] depthBuffer;
     private TextureMode textureMode = TextureMode.TEXTURE_COLOR;
     private final Texture renderTexture = new Texture(0, 0, null);
+
+    private static ScheduledExecutorService THREAD_POOL = Executors.newScheduledThreadPool(12);
 
     //TODO: camera movement
     //TODO: merge lights/instances/camera into one list
@@ -96,12 +99,26 @@ public class Scene {
 
     public void renderScene() {
         synchronized (renderTexture) {
+            CompletionService<Void> service = new ExecutorCompletionService<>(THREAD_POOL);
+
             for (Instance instance : instances) {
-                synchronized (instance.getLock()) {
-                    Matrix4f transform = camera.getCameraMatrix().mul(instance.getTransformMatrix());
-                    Model clippedModel = transformAndClip(instance.getModel(), transform, instance.getScaling().max());
-                    if (clippedModel == null) continue;
-                    renderModel(clippedModel, instance.getOrientationMatrix());
+                service.submit(() -> {
+                    synchronized (instance.getLock()) {
+                        Matrix4f transform = camera.getCameraMatrix().mul(instance.getTransformMatrix());
+                        Model clippedModel = transformAndClip(instance.getModel(), transform, instance.getScaling().max());
+                        if (clippedModel == null) return null;
+                        renderModel(clippedModel, instance.getOrientationMatrix());
+                    }
+
+                    return null;
+                });
+            }
+
+            for (int i = 0; i < instances.size(); ++i) {
+                try {
+                    service.take().get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -173,7 +190,7 @@ public class Scene {
         }
     }
 
-    private void renderModel(Model model, Matrix4f orientation) {
+    private synchronized void renderModel(Model model, Matrix4f orientation) {
         Vector3f[] vertices = model.getVertices();
 
         Vector2f[] projected = new Vector2f[vertices.length];
