@@ -9,7 +9,6 @@ import static java.lang.Math.*;
 
 public class BasicModels {
 
-    //TODO: texture is mirrored in X and Y axis, fix it
     public static Model getSphere(Color color1,
                                   Color color2,
                                   Color color3,

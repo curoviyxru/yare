@@ -29,8 +29,13 @@ public class Texture {
     }
 
     public Color getTexel(float u, float v) {
-        int color = rgb[(int) max(v * height - 1, 0) * width + (int) max(u * width - 1, 0)];
+        u = 1.0f - u;
+        v = 1.0f - v;
 
+        int y = (int) max(v * height - 1, 0);
+        int x = (int) max(u * width - 1, 0);
+
+        int color = rgb[y * width + x];
         return new Color((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
     }
 

@@ -16,7 +16,6 @@ public class Scene {
     //TODO: antialiasing
     //TODO: fix too early clipping
     //TODO: fix phantom pixels on edges
-    //TODO: fix strange UV for loaded models
 
     public enum ShadingType {
         FLAT, GOURAUD, PHONG
