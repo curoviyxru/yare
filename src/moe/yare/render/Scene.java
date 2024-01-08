@@ -19,7 +19,7 @@ public class Scene {
     //TODO: fix yaw inverted because of pitch
 
     public enum ShadingType {
-        FLAT, GOURAUD, PHONG
+        FLAT, GOURAUD, PHONG, DISABLED
     }
 
     public enum TextureMode {
@@ -318,7 +318,7 @@ public class Scene {
             normal0 = normal1 = normal2 = new Vector4f(normal.getX(), normal.getY(), normal.getZ(), 1);
         }
 
-        float intensity = 0;
+        float intensity = 1;
         float[][] ii = FAA_STUB, nx = FAA_STUB, ny = FAA_STUB, nz = FAA_STUB;
         switch (shadingModel) {
             case FLAT -> {

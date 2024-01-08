@@ -202,7 +202,7 @@ public class ViewerFrame extends JFrame {
         JMenu shadingMenu = new JMenu("Shading");
         addRadioItems(shadingMenu, 2, i -> {
             canvas.getScene().setShadingModel(Scene.ShadingType.values()[i]);
-        }, "Flat model", "Gouraud model", "Phong model");
+        }, "Flat model", "Gouraud model", "Phong model", "Disabled");
         menuBar.add(shadingMenu);
 
         return menuBar;
