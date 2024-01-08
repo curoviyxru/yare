@@ -103,7 +103,7 @@ public class Canvas extends JPanel {
                 .append(" Z: ").append(camera.getTranslation().getZ());
         g.drawString(coords.toString(), 0, 42);
         coords.setLength(0);
-        coords.append(" rX: ").append(camera.getRotation().getX())
+        coords.append("rX: ").append(camera.getRotation().getX())
                 .append(" rY: ").append(camera.getRotation().getY())
                 .append(" rZ: ").append(camera.getRotation().getZ());
         g.drawString(coords.toString(), 0, 56);

@@ -15,7 +15,6 @@ public class Scene {
     //TODO: javadoc
     //TODO: antialiasing
     //TODO: fix too early clipping
-    //TODO: fix render model from backwards
     //TODO: fix yaw inverted because of pitch
 
     public enum ShadingType {
@@ -275,7 +274,9 @@ public class Scene {
                 vertices[triangleIndexes.getZ()]);
 
         if (backfaceCullingEnabled) {
-            Vector3f vertexToCamera = new Vector3f(camera.getTranslation()).sub(vertices[triangleIndexes.getX()]);
+            Vector3f vertexToCamera = camera.getCameraMatrix()
+                    .mul(camera.getTranslation(), 1)
+                    .sub(vertices[triangleIndexes.getX()]);
             if (vertexToCamera.dot(normal) <= 0) {
                 return;
             }
