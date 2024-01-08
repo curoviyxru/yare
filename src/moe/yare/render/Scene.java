@@ -22,13 +22,13 @@ public class Scene {
     }
 
     public enum TextureMode {
-        TEXTURE_COLOR, TRIANGLE_COLOR, ONE_COLOR
+        TEXTURE_COLOR, TRIANGLE_COLOR, ONE_COLOR, DISABLED
     }
 
     private static final float[][] FAA_STUB = new float[][] { null, null };
 
     private Color edgeColor = new Color(255, 0, 255);
-    private Color materialColor = new Color(255, 255, 255);
+    private Color materialColor = new Color(150, 150, 150);
     private Color backgroundColor = new Color(255, 255, 255);
     private boolean depthBufferingEnabled = true;
     private boolean backfaceCullingEnabled = true;
@@ -445,7 +445,7 @@ public class Scene {
                         }
                     }
 
-                    Color color;
+                    Color color = null;
                     switch (textureMode) {
                         case TEXTURE_COLOR:
                             if (triangle.getTexture() != null) {
@@ -469,11 +469,13 @@ public class Scene {
                                 color = new Color(triangle.getColor());
                                 break;
                             }
-                        default:
+                        case ONE_COLOR:
                             color = new Color(materialColor);
                     }
 
-                    putPixel(color.mul(intensity), x, y);
+                    if (color != null) {
+                        putPixel(color.mul(intensity), x, y);
+                    }
                 }
             }
         }

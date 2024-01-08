@@ -196,7 +196,7 @@ public class ViewerFrame extends JFrame {
         JMenu texturingMenu = new JMenu("Texturing");
         addRadioItems(texturingMenu, 0, i -> {
             canvas.getScene().setTextureMode(Scene.TextureMode.values()[i]);
-        }, "Texture color", "Triangle color", "One color");
+        }, "Texture color", "Triangle color", "One color", "Disabled");
         menuBar.add(texturingMenu);
 
         JMenu shadingMenu = new JMenu("Shading");
