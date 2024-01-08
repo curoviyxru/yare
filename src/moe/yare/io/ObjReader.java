@@ -51,22 +51,23 @@ public class ObjReader {
                     continue;
                 }
 
-                if (line.startsWith("usemtl ")) {
-                    String filename = line.split("\\s+")[1];
-                    try {
-                        currentTexture = TextureReader.loadTexture(Path.of(filepath)
-                                .toAbsolutePath()
-                                .getParent()
-                                .resolve(filename)
-                                .toAbsolutePath()
-                                .toString());
-                    }
-                    catch (Exception ex) {
-                        currentTexture = null;
-                        ex.printStackTrace();
-                    }
-                    continue;
-                }
+                //TODO MTL reading
+//                if (line.startsWith("usemtl ")) {
+//                    String filename = line.split("\\s+")[1];
+//                    try {
+//                        currentTexture = TextureReader.loadTexture(Path.of(filepath)
+//                                .toAbsolutePath()
+//                                .getParent()
+//                                .resolve(filename)
+//                                .toAbsolutePath()
+//                                .toString());
+//                    }
+//                    catch (Exception ex) {
+//                        currentTexture = null;
+//                        ex.printStackTrace();
+//                    }
+//                    continue;
+//                }
 
                 if (line.startsWith("f ")) {
                     readTriangle(line, currentTexture, uvs, normals, triangles);
@@ -88,17 +89,20 @@ public class ObjReader {
 
         if (values.length == 5) {
             int[] face = new int[3];
-            Vector3f[] triangleNormals = new Vector3f[3];
-            Vector2f[] triangleUvs = new Vector2f[3];
+            Vector2f[] triangleUvs = null;
+            Vector3f[] triangleNormals = null;
             int k = 0;
             for (int i = 1; k < 3; i++, k++) {
                 String[] vertexIndex = values[i].split("/");
-                int vertexIndexInt = Integer.parseInt(vertexIndex[0]) - 1;
-                int uvIndexInt = Integer.parseInt(vertexIndex[1]) - 1;
-                int normalIndexInt = Integer.parseInt(vertexIndex[2]) - 1;
-                face[k] = vertexIndexInt;
-                triangleNormals[k] = normals.get(normalIndexInt);
-                triangleUvs[k] = uvs.get(uvIndexInt);
+                face[k] = Integer.parseInt(vertexIndex[0]) - 1;
+                if (vertexIndex.length > 1 && !vertexIndex[1].isBlank()) {
+                    if (triangleUvs == null) triangleUvs = new Vector2f[3];
+                    triangleUvs[k] = uvs.get(Integer.parseInt(vertexIndex[1]) - 1);
+                }
+                if (vertexIndex.length > 2 && !vertexIndex[2].isBlank()) {
+                    if (triangleNormals == null) triangleNormals = new Vector3f[3];
+                    triangleNormals[k] = normals.get(Integer.parseInt(vertexIndex[2]) - 1);
+                }
                 if (i == 1) i++;
             }
 
@@ -107,19 +111,22 @@ public class ObjReader {
         }
 
         int[] face = new int[3];
-        Vector3f[] triangleNormals = new Vector3f[3];
-        Vector2f[] triangleUvs = new Vector2f[3];
+        Vector2f[] triangleUvs = null;
+        Vector3f[] triangleNormals = null;
         for (int i = 1; i <= 3; i++) {
             String[] vertexIndex = values[i].split("/");
-            int vertexIndexInt = Integer.parseInt(vertexIndex[0]) - 1;
-            int uvIndexInt = Integer.parseInt(vertexIndex[1]) - 1;
-            int normalIndexInt = Integer.parseInt(vertexIndex[2]) - 1;
-            face[i-1] = vertexIndexInt;
-            triangleNormals[i-1] = normals.get(normalIndexInt);
-            triangleUvs[i-1] = uvs.get(uvIndexInt);
+            face[i-1] = Integer.parseInt(vertexIndex[0]) - 1;
+            if (vertexIndex.length > 1 && !vertexIndex[1].isBlank()) {
+                if (triangleUvs == null) triangleUvs = new Vector2f[3];
+                triangleUvs[i-1] = uvs.get(Integer.parseInt(vertexIndex[1]) - 1);
+            }
+            if (vertexIndex.length > 2 && !vertexIndex[2].isBlank()) {
+                if (triangleNormals == null) triangleNormals = new Vector3f[3];
+                triangleNormals[i-1] = normals.get(Integer.parseInt(vertexIndex[2]) - 1);
+            }
         }
 
-        triangles.add( new Triangle(new Vector3i(face[0], face[1], face[2]), null,
+        triangles.add(new Triangle(new Vector3i(face[0], face[1], face[2]), null,
                 triangleNormals, currentTexture, triangleUvs));
     }
 }

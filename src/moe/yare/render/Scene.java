@@ -274,7 +274,7 @@ public class Scene {
         }
 
         Vector4f normal0, normal1, normal2;
-        if (useVertexNormals) {
+        if (useVertexNormals && triangle.getNormals() != null) {
             Matrix4f transform = camera.getTransposedRotationMatrix().mul(orientation);
             normal0 = transform.mul(triangle.getNormals()[indexes[0]], 1);
             normal1 = transform.mul(triangle.getNormals()[indexes[1]], 1);
