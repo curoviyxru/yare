@@ -15,7 +15,6 @@ public class Scene {
     //TODO: javadoc
     //TODO: antialiasing
     //TODO: fix too early clipping
-    //TODO: fix phantom pixels on edges
 
     public enum ShadingType {
         FLAT, GOURAUD, PHONG
@@ -46,7 +45,7 @@ public class Scene {
     private TextureMode textureMode = TextureMode.TEXTURE_COLOR;
     private final Texture renderTexture = new Texture(0, 0, null);
 
-    private static ScheduledExecutorService THREAD_POOL = Executors.newScheduledThreadPool(12);
+    private static final ScheduledExecutorService THREAD_POOL = Executors.newScheduledThreadPool(12);
 
     //TODO: camera movement
     //TODO: merge lights/instances/camera into one list
@@ -84,6 +83,18 @@ public class Scene {
     public void clearInstances() {
         synchronized (renderTexture) {
             instances.clear();
+        }
+    }
+
+    public void removeInstance(int i) {
+        synchronized (renderTexture) {
+            instances.remove(i);
+        }
+    }
+
+    public void removeInstance(Instance i) {
+        synchronized (renderTexture) {
+            instances.remove(i);
         }
     }
 
@@ -597,6 +608,7 @@ public class Scene {
             renderTexture.getRGB()[offset] = c.rgb();
 
         //TODO: is there other way to do it?
+        //TODO: fix phantom pixels on edges
 
         px = (Cw >> 1) + round(x);
         py = (Ch >> 1) - round(y) - 1;

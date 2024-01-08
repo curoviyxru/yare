@@ -75,4 +75,19 @@ public class SceneListModel extends AbstractTableModel {
         scene.addInstance(instance);
         fireTableRowsInserted(scene.getInstances().size(), scene.getInstances().size());
     }
+
+    public void removeInstance(Instance instance) {
+        if (instance == null) {
+            return;
+        }
+
+        List<Instance> instances = scene.getInstances();
+        for (int i = 0; i < instances.size(); ++i) {
+            if (instance.equals(instances.get(i))) {
+                scene.removeInstance(i);
+                fireTableRowsDeleted(i, i);
+                return;
+            }
+        }
+    }
 }

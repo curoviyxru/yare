@@ -26,6 +26,7 @@ public class InstanceInfo extends JPanel {
     private JComboBox<String> textureBox;
     private JComboBox<String> modelBox;
     private JTextField nameField;
+    private JButton removeButton;
 
     private Instance instance;
     private SceneListModel sceneListModel;
@@ -172,6 +173,13 @@ public class InstanceInfo extends JPanel {
                 instance.setModel(model);
             }
         });
+
+        removeButton.addActionListener(e -> {
+            if (sceneListModel != null) {
+                sceneListModel.removeInstance(instance);
+            }
+            setInstance(null);
+        });
     }
 
     private void setupUI() {
@@ -235,7 +243,7 @@ public class InstanceInfo extends JPanel {
         final JPanel spacer1 = new JPanel();
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
-        gbc.gridy = 12;
+        gbc.gridy = 13;
         gbc.gridwidth = 6;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.VERTICAL;
@@ -384,6 +392,14 @@ public class InstanceInfo extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel1.add(textureBox, gbc);
+        removeButton = new JButton("Remove instance");
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.gridwidth = 6;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel1.add(removeButton, gbc);
         final JLabel label15 = new JLabel();
         label15.setText("Name:");
         gbc = new GridBagConstraints();
@@ -418,6 +434,7 @@ public class InstanceInfo extends JPanel {
         textureBox.setEnabled(instance != null);
         modelBox.setEnabled(instance != null);
         nameField.setEnabled(instance != null);
+        removeButton.setEnabled(instance != null);
 
         if (instance == null) {
             return;
@@ -432,8 +449,8 @@ public class InstanceInfo extends JPanel {
         sX.setText(String.valueOf(instance.getScaling().getX()));
         sY.setText(String.valueOf(instance.getScaling().getY()));
         sZ.setText(String.valueOf(instance.getScaling().getZ()));
-        //TODO textureBox
-        //TODO modelBox
+        //TODO textureBox model
+        //TODO modelBox model
         nameField.setText(instance.getName() == null ? "" : instance.getName());
     }
 
